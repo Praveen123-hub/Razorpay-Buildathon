@@ -1,0 +1,863 @@
+[
+  {
+    "p_id": "SHOE_001",
+    "p_name": "Running Shoes",
+    "category": "Footwear",
+    "description": "Lightweight shoes designed for running, jogging, and daily training.",
+    "price": 4499,
+    "rating": 4.7,
+    "attributes": {
+      "sizes": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "colors": [
+        "Black",
+        "White",
+        "Blue"
+      ]
+    }
+  },
+  {
+    "p_id": "SHOE_002",
+    "p_name": "Training Shoes",
+    "category": "Footwear",
+    "description": "Versatile shoes designed for gym workouts, crossfit, and training.",
+    "price": 2999,
+    "rating": 4.1,
+    "attributes": {
+      "sizes": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "colors": [
+        "Grey",
+        "White",
+        "Red"
+      ]
+    }
+  },
+  {
+    "p_id": "SHOE_003",
+    "p_name": "Casual Loafers",
+    "category": "Footwear",
+    "description": "Stylish casual loafers designed for everyday comfort and dress socks pairing.",
+    "price": 2799,
+    "rating": 4.4,
+    "attributes": {
+      "sizes": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "colors": [
+        "Tan",
+        "Navy",
+        "Charcoal"
+      ]
+    }
+  },
+  {
+    "p_id": "SHOE_004",
+    "p_name": "Hiking Boots",
+    "category": "Footwear",
+    "description": "Waterproof hiking boots built for rugged trails, trekking, and orthotic insoles.",
+    "price": 5499,
+    "rating": 4.5,
+    "attributes": {
+      "sizes": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "colors": [
+        "Olive",
+        "Brown",
+        "Black"
+      ]
+    }
+  },
+  {
+    "p_id": "SHOE_005",
+    "p_name": "Walking Shoes",
+    "category": "Footwear",
+    "description": "Lightweight walking shoes designed for standing comfort and daily walking.",
+    "price": 1799,
+    "rating": 4.5,
+    "attributes": {
+      "sizes": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "colors": [
+        "Black",
+        "Grey",
+        "Navy"
+      ]
+    }
+  },
+  {
+    "p_id": "SOCK_001",
+    "p_name": "Running Socks",
+    "category": "Footwear Accessories",
+    "description": "Breathable athletic socks designed for sports and running shoes.",
+    "price": 449,
+    "rating": 4.6,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "colors": [
+        "White",
+        "Black",
+        "Grey"
+      ]
+    }
+  },
+  {
+    "p_id": "SOCK_002",
+    "p_name": "Dress Socks",
+    "category": "Footwear Accessories",
+    "description": "Premium dress socks designed for formal wear and casual loafers.",
+    "price": 499,
+    "rating": 4.2,
+    "attributes": {
+      "sizes": [
+        "M",
+        "L"
+      ],
+      "colors": [
+        "Navy",
+        "Black",
+        "Grey"
+      ]
+    }
+  },
+  {
+    "p_id": "INSO_001",
+    "p_name": "Shoe Insoles",
+    "category": "Footwear Accessories",
+    "description": "Ergonomic shoe insoles offering premium memory foam support for walking shoes or hiking boots.",
+    "price": 899,
+    "rating": 4.7,
+    "attributes": {
+      "sizes": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "colors": [
+        "Blue",
+        "Grey"
+      ]
+    }
+  },
+  {
+    "p_id": "SHIRT_001",
+    "p_name": "Oxford Cotton Shirt",
+    "category": "Apparel",
+    "description": "Classic button-down shirt. A formal shirt and casual shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt. Shirt.",
+    "price": 1699,
+    "rating": 4.5,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "White",
+        "Blue",
+        "Pink"
+      ]
+    }
+  },
+  {
+    "p_id": "SHIRT_002",
+    "p_name": "Crewneck T-Shirt",
+    "category": "Apparel",
+    "description": "Soft crewneck t-shirt designed for daily wear and gym running shorts.",
+    "price": 999,
+    "rating": 4.3,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "White",
+        "Grey",
+        "Blue"
+      ]
+    }
+  },
+  {
+    "p_id": "SHIRT_003",
+    "p_name": "Gym T-Shirt",
+    "category": "Apparel",
+    "description": "Moisture-wicking gym t-shirt designed for athletic workouts and sports track pants.",
+    "price": 1099,
+    "rating": 4.1,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Red",
+        "Black",
+        "Charcoal"
+      ]
+    }
+  },
+  {
+    "p_id": "JEANS_001",
+    "p_name": "Slim Fit Jeans",
+    "category": "Apparel",
+    "description": "Classic slim fit denim jeans offering stretch, style, and compatibility with leather belts.",
+    "price": 2299,
+    "rating": 4.5,
+    "attributes": {
+      "sizes": [
+        30,
+        32,
+        34,
+        36
+      ],
+      "waist": [
+        30,
+        32,
+        34,
+        36
+      ],
+      "colors": [
+        "Dark Blue",
+        "Light Blue",
+        "Black"
+      ]
+    }
+  },
+  {
+    "p_id": "PANT_001",
+    "p_name": "Sports Track Pants",
+    "category": "Apparel",
+    "description": "Comfortable sports track pants designed for active gym workouts and athletic shirts.",
+    "price": 1699,
+    "rating": 4.2,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "Grey",
+        "Navy"
+      ]
+    }
+  },
+  {
+    "p_id": "HOOD_001",
+    "p_name": "Pullover Hoodie",
+    "category": "Apparel",
+    "description": "Warm pullover hoodie for casual comfort, paired with sports caps.",
+    "price": 1999,
+    "rating": 4.6,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Grey",
+        "Black",
+        "Olive"
+      ]
+    }
+  },
+  {
+    "p_id": "JACK_001",
+    "p_name": "Windbreaker Jacket",
+    "category": "Apparel",
+    "description": "Lightweight windbreaker jacket designed for protection against wind, paired with sports caps.",
+    "price": 2799,
+    "rating": 4.4,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Navy",
+        "Yellow",
+        "Black"
+      ]
+    }
+  },
+  {
+    "p_id": "SHOR_001",
+    "p_name": "Gym Running Shorts",
+    "category": "Apparel",
+    "description": "Flexible running shorts designed for gym training and crewneck t-shirts.",
+    "price": 899,
+    "rating": 4.5,
+    "attributes": {
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "Grey",
+        "Blue"
+      ]
+    }
+  },
+  {
+    "p_id": "BELT_001",
+    "p_name": "Leather Belt",
+    "category": "Apparel Accessories",
+    "description": "Full grain leather belt designed for pants, jeans, and formal shirts.",
+    "price": 1199,
+    "rating": 4.1,
+    "attributes": {
+      "sizes": [
+        30,
+        32,
+        34,
+        36,
+        38
+      ],
+      "colors": [
+        "Brown",
+        "Black",
+        "Tan"
+      ]
+    }
+  },
+  {
+    "p_id": "CAP_001",
+    "p_name": "Sports Cap",
+    "category": "Apparel Accessories",
+    "description": "Breathable sports cap designed for running, outdoor wear, and windbreaker jackets.",
+    "price": 599,
+    "rating": 4.4,
+    "attributes": {
+      "sizes": [
+        "One Size"
+      ],
+      "colors": [
+        "Black",
+        "White",
+        "Navy"
+      ]
+    }
+  },
+  {
+    "p_id": "EAR_001",
+    "p_name": "Wireless Earbuds",
+    "category": "Electronics",
+    "description": "Wireless noise-cancelling earbuds compatible with protective storage cases.",
+    "price": 4499,
+    "rating": 4.3,
+    "attributes": {
+      "colors": [
+        "Black",
+        "White"
+      ]
+    }
+  },
+  {
+    "p_id": "WATCH_001",
+    "p_name": "Fitness Smartwatch",
+    "category": "Electronics",
+    "description": "Amoled fitness smartwatch compatible with silicone replacement watch straps.",
+    "price": 4299,
+    "rating": 4.5,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Silver",
+        "Rose Gold"
+      ]
+    }
+  },
+  {
+    "p_id": "POW_001",
+    "p_name": "Fast Charging Power Bank",
+    "category": "Electronics",
+    "description": "High capacity power bank for fast charging mobile devices via USB-C cable.",
+    "price": 2199,
+    "rating": 4.1,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Dark Blue"
+      ]
+    }
+  },
+  {
+    "p_id": "SPK_001",
+    "p_name": "Bluetooth Speaker",
+    "category": "Electronics",
+    "description": "Waterproof Bluetooth speaker with USB-C cable charging port.",
+    "price": 3299,
+    "rating": 4.6,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Blue",
+        "Red"
+      ]
+    }
+  },
+  {
+    "p_id": "KEY_001",
+    "p_name": "Mechanical Keyboard",
+    "category": "Electronics",
+    "description": "Wireless mechanical keyboard designed to pair with a wireless mouse.",
+    "price": 3999,
+    "rating": 4.4,
+    "attributes": {
+      "colors": [
+        "Grey",
+        "White",
+        "RGB"
+      ]
+    }
+  },
+  {
+    "p_id": "CHG_001",
+    "p_name": "Wall Charger",
+    "category": "Electronics Accessories",
+    "description": "Fast wall charger with multiple ports, compatible with USB-C cables.",
+    "price": 1299,
+    "rating": 4.5,
+    "attributes": {
+      "colors": [
+        "White",
+        "Black"
+      ]
+    }
+  },
+  {
+    "p_id": "CAB_001",
+    "p_name": "USB-C Cable",
+    "category": "Electronics Accessories",
+    "description": "Durable braided USB-C cable designed for power banks and rapid wall chargers.",
+    "price": 399,
+    "rating": 4.2,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Grey",
+        "Red"
+      ]
+    }
+  },
+  {
+    "p_id": "MOU_001",
+    "p_name": "Wireless Mouse",
+    "category": "Electronics Accessories",
+    "description": "Ergonomic wireless mouse designed to pair with mechanical keyboards.",
+    "price": 1999,
+    "rating": 4.6,
+    "attributes": {
+      "colors": [
+        "Black",
+        "White",
+        "Grey"
+      ]
+    }
+  },
+  {
+    "p_id": "STND_001",
+    "p_name": "Laptop Stand",
+    "category": "Electronics Accessories",
+    "description": "Aluminum laptop stand riser designed for ergonomic desk setups with wireless mice.",
+    "price": 1899,
+    "rating": 4.2,
+    "attributes": {
+      "colors": [
+        "Silver",
+        "Space Grey"
+      ]
+    }
+  },
+  {
+    "p_id": "CASE_001",
+    "p_name": "Earbuds Case",
+    "category": "Electronics Accessories",
+    "description": "Silicone cover case designed to protect wireless earbuds.",
+    "price": 499,
+    "rating": 4.4,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Blue",
+        "Red",
+        "Clear"
+      ]
+    }
+  },
+  {
+    "p_id": "STRAP_001",
+    "p_name": "Replacement Watch Strap",
+    "category": "Electronics Accessories",
+    "description": "Silicone replacement watch strap designed for fitness smartwatches.",
+    "price": 699,
+    "rating": 4.6,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Navy Blue",
+        "Olive Green"
+      ]
+    }
+  },
+  {
+    "p_id": "SCRN_001",
+    "p_name": "Screen Protector",
+    "category": "Electronics Accessories",
+    "description": "Tempered glass screen protector for devices, compatible with case protective covers.",
+    "price": 299,
+    "rating": 4.1,
+    "attributes": {
+      "pack_of": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "p_id": "BOT_001",
+    "p_name": "Insulated Water Bottle",
+    "category": "Fitness Gear",
+    "description": "Vacuum insulated sports water bottle, perfect for gym and yoga mat workouts.",
+    "price": 1499,
+    "rating": 4.7,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Ocean Blue",
+        "Silver"
+      ]
+    }
+  },
+  {
+    "p_id": "YOGA_001",
+    "p_name": "TPE Yoga Mat",
+    "category": "Fitness Gear",
+    "description": "Non-slip TPE yoga mat designed for exercise and hydration with water bottles.",
+    "price": 1699,
+    "rating": 4.6,
+    "attributes": {
+      "colors": [
+        "Purple",
+        "Green",
+        "Blue"
+      ]
+    }
+  },
+  {
+    "p_id": "BAND_001",
+    "p_name": "Resistance Bands",
+    "category": "Fitness Accessories",
+    "description": "Exercise resistance bands set, ideal for stretching on a yoga mat.",
+    "price": 699,
+    "rating": 4.5,
+    "attributes": {
+      "levels": [
+        "Light",
+        "Medium",
+        "Heavy",
+        "Extra Heavy"
+      ]
+    }
+  },
+  {
+    "p_id": "BAG_001",
+    "p_name": "Sports Duffel Bag",
+    "category": "Fitness Gear",
+    "description": "Waterproof sports duffel bag designed to carry gym gear and water bottles.",
+    "price": 2199,
+    "rating": 4.3,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Grey",
+        "Red"
+      ]
+    }
+  },
+  {
+    "p_id": "SHAK_001",
+    "p_name": "Protein Shaker",
+    "category": "Fitness Gear",
+    "description": "Protein shaker bottle for post-workout shakes after resistance bands exercise.",
+    "price": 599,
+    "rating": 4.1,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Clear",
+        "Blue"
+      ]
+    }
+  },
+  {
+    "p_id": "ROPE_001",
+    "p_name": "Weighted Jump Rope",
+    "category": "Fitness Gear",
+    "description": "Speed weighted jump rope designed for cardio and resistance bands workouts.",
+    "price": 999,
+    "rating": 4.5,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Red"
+      ]
+    }
+  },
+  {
+    "p_id": "FOAM_001",
+    "p_name": "Foam Roller",
+    "category": "Fitness Gear",
+    "description": "High-density foam roller designed for deep tissue massage on yoga mats.",
+    "price": 1099,
+    "rating": 4.6,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Blue",
+        "Orange"
+      ]
+    }
+  },
+  {
+    "p_id": "MUG_001",
+    "p_name": "Travel Coffee Mug",
+    "category": "Home & Kitchen",
+    "description": "Insulated travel coffee mug designed to be placed on walnut wood coasters.",
+    "price": 1299,
+    "rating": 4.2,
+    "attributes": {
+      "colors": [
+        "Black",
+        "White",
+        "Navy"
+      ]
+    }
+  },
+  {
+    "p_id": "COAST_001",
+    "p_name": "Walnut Wood Coasters",
+    "category": "Home & Kitchen",
+    "description": "Handmade walnut wood coasters set of 4, perfect for travel coffee mugs.",
+    "price": 799,
+    "rating": 4.4,
+    "attributes": {
+      "pack_of": [
+        4
+      ]
+    }
+  },
+  {
+    "p_id": "LAMP_001",
+    "p_name": "LED Desk Lamp",
+    "category": "Home & Kitchen",
+    "description": "LED desk lamp with eye-care lighting, perfect for workspace with coasters.",
+    "price": 2199,
+    "rating": 4.3,
+    "attributes": {
+      "colors": [
+        "White",
+        "Black"
+      ]
+    }
+  },
+  {
+    "p_id": "WALL_001",
+    "p_name": "Slim Card Wallet",
+    "category": "Lifestyle Accessories",
+    "description": "Minimalist RFID blocking card wallet designed to fit in travel backpacks.",
+    "price": 1499,
+    "rating": 4.6,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Brown",
+        "Carbon Fiber"
+      ]
+    }
+  },
+  {
+    "p_id": "SUNGL_001",
+    "p_name": "Wayfarer Sunglasses",
+    "category": "Lifestyle Accessories",
+    "description": "Classic wayfarer sunglasses with UV protection, fits in travel backpacks.",
+    "price": 1699,
+    "rating": 4.1,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Tortoise"
+      ]
+    }
+  },
+  {
+    "p_id": "BACK_001",
+    "p_name": "Laptop Travel Backpack",
+    "category": "Lifestyle Accessories",
+    "description": "Anti-theft travel laptop backpack with compartments for cards, wallets, and laptop.",
+    "price": 2999,
+    "rating": 4.4,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Grey",
+        "Navy"
+      ]
+    }
+  },
+  {
+    "p_id": "TRIM_001",
+    "p_name": "Cordless Beard Trimmer",
+    "category": "Personal Care",
+    "description": "Precision cordless beard trimmer for grooming, paired with luxury perfumes.",
+    "price": 1999,
+    "rating": 4.5,
+    "attributes": {
+      "colors": [
+        "Black",
+        "Gold"
+      ]
+    }
+  },
+  {
+    "p_id": "TOOTH_001",
+    "p_name": "Electric Toothbrush",
+    "category": "Personal Care",
+    "description": "Smart electric toothbrush for dental care, paired with hydrating lip balms.",
+    "price": 3499,
+    "rating": 4.3,
+    "attributes": {
+      "colors": [
+        "White",
+        "Black",
+        "Pink"
+      ]
+    }
+  },
+  {
+    "p_id": "SUN_001",
+    "p_name": "Matte Sunscreen Gel",
+    "category": "Personal Care",
+    "description": "Matte sunscreen gel for UV protection, paired with hydrating lip balms.",
+    "price": 799,
+    "rating": 4.1,
+    "attributes": {
+      "volume": [
+        "50ml",
+        "100ml"
+      ]
+    }
+  },
+  {
+    "p_id": "PERF_001",
+    "p_name": "Eau De Parfum Perfume",
+    "category": "Personal Care",
+    "description": "Luxury perfume with long-lasting fragrance, perfect after trimmer grooming.",
+    "price": 4499,
+    "rating": 4.4,
+    "attributes": {
+      "volume": [
+        "50ml",
+        "100ml"
+      ]
+    }
+  },
+  {
+    "p_id": "FACE_001",
+    "p_name": "Face Cleanser Wash",
+    "category": "Personal Care",
+    "description": "Purifying face cleanser wash, recommended before applying sunscreen gel.",
+    "price": 499,
+    "rating": 4.6,
+    "attributes": {
+      "volume": [
+        "100ml",
+        "150ml"
+      ]
+    }
+  },
+  {
+    "p_id": "WAX_001",
+    "p_name": "Hair Styling Wax",
+    "category": "Personal Care",
+    "description": "Strong hold hair styling clay wax, paired with luxury perfumes.",
+    "price": 599,
+    "rating": 4.5,
+    "attributes": {
+      "weight": [
+        "50g",
+        "100g"
+      ]
+    }
+  },
+  {
+    "p_id": "LIP_001",
+    "p_name": "Hydrating Lip Balm",
+    "category": "Personal Care",
+    "description": "Organic hydrating lip balm designed to moisturize lips after electric toothbrush care.",
+    "price": 249,
+    "rating": 4.2,
+    "attributes": {
+      "weight": [
+        "5g",
+        "10g"
+      ]
+    }
+  }
+]

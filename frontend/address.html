@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Buyer Agent - Delivery Address</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #f9fafb;
+      --bg-secondary: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --accent-color: #2563eb;
+      --accent-color-hover: #1d4ed8;
+      --accent-light: #eff6ff;
+      --border-color: #e5e7eb;
+      --border-focus: #2563eb;
+      --error-color: #dc2626;
+      --error-bg: #fef2f2;
+      --success-color: #059669;
+      --success-bg: #ecfdf5;
+      --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 32px 16px;
+      line-height: 1.5;
+    }
+
+    /* Container */
+    .address-container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Brand Header Section */
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-logo-wrapper {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .brand-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .brand-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Address Card */
+    .address-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+      width: 100%;
+      padding: 32px 28px;
+      transition: all 0.2s ease;
+    }
+
+    .card-header {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .card-heading {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .card-subheading {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Status Banner */
+    .status-banner {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      line-height: 1.4;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .status-banner.success {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--success-bg);
+      border: 1px solid #a7f3d0;
+      color: var(--success-color);
+    }
+
+    .status-banner.info {
+      display: block;
+      background-color: var(--accent-light);
+      border: 1px solid #bfdbfe;
+      color: var(--accent-color);
+    }
+
+    /* Form Layout */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-col-full {
+      grid-column: span 2;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .optional-tag {
+      font-size: 11.5px;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      height: 42px;
+      padding: 9px 14px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px 16px;
+      padding-right: 36px;
+    }
+
+    .form-input::placeholder {
+      color: #9ca3af;
+      font-weight: 400;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .form-input.has-error,
+    .form-select.has-error {
+      border-color: var(--error-color);
+      background-color: var(--error-bg);
+    }
+
+    .field-hint {
+      font-size: 11.5px;
+      color: var(--error-color);
+      margin-top: 2px;
+      display: none;
+    }
+
+    .field-hint.visible {
+      display: block;
+    }
+
+    /* Action Buttons */
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      margin-top: 8px;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 22px;
+      border: 1px solid var(--accent-color);
+      background-color: var(--accent-color);
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-submit:hover {
+      background-color: var(--accent-color-hover);
+      border-color: var(--accent-color-hover);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      margin-top: 12px;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      box-shadow: none;
+    }
+
+    /* Saved Address Preview Card State */
+    .saved-address-view {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .saved-address-view.active {
+      display: flex;
+    }
+
+    .address-details-box {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .saved-recipient-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .saved-phone-badge {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .saved-text-line {
+      font-size: 13.5px;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Page Footer */
+    .page-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 560px) {
+      body {
+        padding: 20px 12px;
+        justify-content: flex-start;
+      }
+
+      .address-card {
+        padding: 24px 18px;
+        border-radius: 14px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .form-col-full {
+        grid-column: span 1;
+      }
+
+      .brand-header {
+        margin-top: 8px;
+        margin-bottom: 20px;
+      }
+
+      .brand-title {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="address-container">
+
+    <!-- Application Logo and Title -->
+    <header class="brand-header">
+      <div class="brand-logo-wrapper">
+        <img class="brand-logo-img" src="Logo.jpeg" alt="AI Buyer Agent Logo" />
+      </div>
+      <h1 class="brand-title">AI Buyer Agent</h1>
+      <p class="brand-subtitle">Your Personal Shopping Assistant</p>
+    </header>
+
+    <!-- Main Address Card -->
+    <section class="address-card" aria-label="Delivery Address Section">
+
+      <!-- Header -->
+      <div class="card-header">
+        <h2 class="card-heading">Delivery Address</h2>
+        <p class="card-subheading">Add your delivery address to make checkout faster and easier.</p>
+      </div>
+
+      <!-- Feedback Status Banner -->
+      <div class="status-banner" id="statusBanner" role="status" aria-live="polite">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span id="statusBannerText">Address saved successfully</span>
+      </div>
+
+      <!-- 1. EDITABLE ADDRESS FORM -->
+      <form id="addressForm" onsubmit="handleAddressSubmit(event)" novalidate>
+        <div class="form-grid">
+
+          <!-- Recipient Name -->
+          <div class="form-group form-col-full">
+            <label class="form-label" for="recipientName">Recipient Name</label>
+            <input
+              type="text"
+              id="recipientName"
+              class="form-input"
+              placeholder="Enter recipient name"
+              autocomplete="name"
+              required
+            />
+            <span class="field-hint" id="recipientNameHint">Please enter the recipient's name.</span>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="form-group form-col-full">
+            <label class="form-label" for="phoneNumber">Phone Number</label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              class="form-input"
+              placeholder="Enter 10-digit phone number"
+              autocomplete="tel"
+              maxlength="10"
+              required
+            />
+            <span class="field-hint" id="phoneNumberHint">Please enter a valid 10-digit phone number.</span>
+          </div>
+
+          <!-- Address Line 1 -->
+          <div class="form-group form-col-full">
+            <label class="form-label" for="addressLine1">Address Line 1</label>
+            <input
+              type="text"
+              id="addressLine1"
+              class="form-input"
+              placeholder="House / Flat / Street Address"
+              autocomplete="street-address"
+              required
+            />
+            <span class="field-hint" id="addressLine1Hint">Please enter your house, flat, or street address.</span>
+          </div>
+
+          <!-- Address Line 2 -->
+          <div class="form-group form-col-full">
+            <label class="form-label" for="addressLine2">
+              Address Line 2
+              <span class="optional-tag">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              id="addressLine2"
+              class="form-input"
+              placeholder="Apartment, Landmark, Area (Optional)"
+              autocomplete="address-line2"
+            />
+          </div>
+
+          <!-- City -->
+          <div class="form-group">
+            <label class="form-label" for="city">City</label>
+            <input
+              type="text"
+              id="city"
+              class="form-input"
+              placeholder="Enter city"
+              autocomplete="address-level2"
+              required
+            />
+            <span class="field-hint" id="cityHint">Please enter your city.</span>
+          </div>
+
+          <!-- State -->
+          <div class="form-group">
+            <label class="form-label" for="state">State</label>
+            <input
+              type="text"
+              id="state"
+              class="form-input"
+              placeholder="Enter state"
+              autocomplete="address-level1"
+              required
+            />
+            <span class="field-hint" id="stateHint">Please enter your state.</span>
+          </div>
+
+          <!-- Pincode -->
+          <div class="form-group">
+            <label class="form-label" for="pincode">Pincode</label>
+            <input
+              type="text"
+              id="pincode"
+              class="form-input"
+              placeholder="Enter 6-digit pincode"
+              autocomplete="postal-code"
+              maxlength="6"
+              required
+            />
+            <span class="field-hint" id="pincodeHint">Please enter a valid 6-digit pincode.</span>
+          </div>
+
+          <!-- Country -->
+          <div class="form-group">
+            <label class="form-label" for="country">Country</label>
+            <select id="country" class="form-select" autocomplete="country-name" required>
+              <option value="India" selected>India</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="Singapore">Singapore</option>
+              <option value="United Arab Emirates">United Arab Emirates</option>
+            </select>
+            <span class="field-hint" id="countryHint">Please select a country.</span>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-col-full">
+            <button type="submit" class="btn-submit" id="btnSaveAddress">
+              Save Address
+            </button>
+          </div>
+
+        </div>
+      </form>
+
+      <!-- 2. SAVED ADDRESS DISPLAY (Demonstration State) -->
+      <div class="saved-address-view" id="savedAddressView">
+        <div class="address-details-box">
+          <div class="saved-recipient-name" id="displayRecipientName">User Alpha</div>
+          <div class="saved-phone-badge" id="displayPhone">Phone: +91 9876543210</div>
+          <div class="saved-text-line" id="displayLine1">12 ABC Street</div>
+          <div class="saved-text-line" id="displayLine2" style="display: none;"></div>
+          <div class="saved-text-line" id="displayCityStatePin">Puducherry, Puducherry - 605001</div>
+          <div class="saved-text-line" id="displayCountry">India</div>
+        </div>
+
+        <button type="button" class="btn-submit btn-secondary" onclick="editSavedAddress()">
+          Edit Address
+        </button>
+      </div>
+
+    </section>
+
+    <footer class="page-footer">
+      &copy; AI Buyer Agent &bull; Secure E-Commerce Assistant
+    </footer>
+
+  </main>
+
+  <script>
+    const apiBase = window.location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
+    const addressUrl = window.location.protocol === 'file:' ? 'address.html' : '/address';
+    const agent1Url = window.location.protocol === 'file:' ? 'agent1.html' : '/agent1';
+    const loginUrl = window.location.protocol === 'file:' ? 'login.html' : '/login';
+
+    // Auth Guard & Existing Address Initialization
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = loginUrl;
+        return;
+      }
+
+      try {
+        const res = await fetch(`${apiBase}/api/user/address`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem('auth_token');
+          window.location.href = loginUrl;
+          return;
+        }
+
+        if (res.ok) {
+          const addr = await res.json();
+          if (addr && addr.recipient_name) {
+            // Pre-fill form with existing address
+            document.getElementById('recipientName').value = addr.recipient_name || '';
+            document.getElementById('phoneNumber').value = addr.phone || '';
+            document.getElementById('addressLine1').value = addr.address_line1 || '';
+            document.getElementById('addressLine2').value = addr.address_line2 || '';
+            document.getElementById('city').value = addr.city || '';
+            document.getElementById('state').value = addr.state || '';
+            document.getElementById('pincode').value = addr.pincode || '';
+            if (addr.country) {
+              document.getElementById('country').value = addr.country;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load existing address:', err);
+      }
+    });
+
+    // Clear all validation errors
+    function clearErrors() {
+      document.querySelectorAll('.form-input, .form-select').forEach(el => el.classList.remove('has-error'));
+      document.querySelectorAll('.field-hint').forEach(hint => hint.classList.remove('visible'));
+    }
+
+    // Phone validation helper
+    function isValidPhone(phone) {
+      const cleanPhone = phone.replace(/[\s\-()]/g, '');
+      return cleanPhone.length >= 7 && /^\d+$/.test(cleanPhone);
+    }
+
+    // Pincode validation helper (numeric postal code)
+    function isValidPincode(pin) {
+      return pin.trim().length >= 3;
+    }
+
+    // Save Address Handler
+    async function handleAddressSubmit(event) {
+      event.preventDefault();
+      clearErrors();
+
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = loginUrl;
+        return;
+      }
+
+      const recipient = document.getElementById('recipientName');
+      const phone = document.getElementById('phoneNumber');
+      const line1 = document.getElementById('addressLine1');
+      const line2 = document.getElementById('addressLine2');
+      const city = document.getElementById('city');
+      const state = document.getElementById('state');
+      const pincode = document.getElementById('pincode');
+      const country = document.getElementById('country');
+      const banner = document.getElementById('statusBanner');
+      const bannerText = document.getElementById('statusBannerText');
+      const btnSave = document.getElementById('btnSaveAddress');
+
+      let hasError = false;
+
+      // 1. Recipient Name
+      if (!recipient.value.trim()) {
+        recipient.classList.add('has-error');
+        document.getElementById('recipientNameHint').classList.add('visible');
+        hasError = true;
+      }
+
+      // 2. Phone Number
+      if (!phone.value.trim() || !isValidPhone(phone.value)) {
+        phone.classList.add('has-error');
+        document.getElementById('phoneNumberHint').classList.add('visible');
+        hasError = true;
+      }
+
+      // 3. Address Line 1
+      if (!line1.value.trim()) {
+        line1.classList.add('has-error');
+        document.getElementById('addressLine1Hint').classList.add('visible');
+        hasError = true;
+      }
+
+      // 4. City
+      if (!city.value.trim()) {
+        city.classList.add('has-error');
+        document.getElementById('cityHint').classList.add('visible');
+        hasError = true;
+      }
+
+      // 5. State
+      if (!state.value.trim()) {
+        state.classList.add('has-error');
+        document.getElementById('stateHint').classList.add('visible');
+        hasError = true;
+      }
+
+      // 6. Pincode
+      if (!pincode.value.trim() || !isValidPincode(pincode.value)) {
+        pincode.classList.add('has-error');
+        document.getElementById('pincodeHint').classList.add('visible');
+        hasError = true;
+      }
+
+      // 7. Country
+      if (!country.value.trim()) {
+        country.classList.add('has-error');
+        document.getElementById('countryHint').classList.add('visible');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      btnSave.disabled = true;
+      btnSave.textContent = 'Saving Address...';
+
+      const payload = {
+        recipient_name: recipient.value.trim(),
+        phone: phone.value.trim(),
+        address_line1: line1.value.trim(),
+        address_line2: line2.value.trim(),
+        city: city.value.trim(),
+        state: state.value.trim(),
+        pincode: pincode.value.trim(),
+        country: country.value.trim()
+      };
+
+      try {
+        const res = await fetch(`${apiBase}/api/user/address`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          banner.className = 'status-banner info';
+          bannerText.textContent = data.detail || 'Failed to save address. Please try again.';
+          banner.style.display = 'flex';
+          btnSave.disabled = false;
+          btnSave.textContent = 'Save Address';
+          return;
+        }
+
+        // Show success status banner
+        banner.className = 'status-banner success';
+        bannerText.textContent = '✓ Address saved successfully! Redirecting...';
+        banner.style.display = 'flex';
+
+        // Redirect to Agent 1
+        setTimeout(() => {
+          window.location.href = agent1Url;
+        }, 600);
+      } catch (err) {
+        banner.className = 'status-banner info';
+        bannerText.textContent = 'Network error. Please make sure the backend server is running on http://127.0.0.1:8000.';
+        banner.style.display = 'flex';
+        btnSave.disabled = false;
+        btnSave.textContent = 'Save Address';
+      }
+    }
+
+    // Toggle back from saved view to editable form
+    function editSavedAddress() {
+      const banner = document.getElementById('statusBanner');
+      banner.style.display = 'none';
+
+      document.getElementById('savedAddressView').classList.remove('active');
+      document.getElementById('addressForm').style.display = 'block';
+      clearErrors();
+
+      setTimeout(() => document.getElementById('recipientName').focus(), 50);
+    }
+  </script>
+</body>
+
+</html>

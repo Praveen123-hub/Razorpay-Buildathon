@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic>=2.0
+python-dotenv
+sentence-transformers
+torch
+numpy
+razorpay
+requests

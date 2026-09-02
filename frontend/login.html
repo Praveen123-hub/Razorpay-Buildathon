@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Buyer Agent - Sign In & Create Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #f9fafb;
+      --bg-secondary: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --accent-color: #2563eb;
+      --accent-color-hover: #1d4ed8;
+      --accent-light: #eff6ff;
+      --border-color: #e5e7eb;
+      --border-focus: #2563eb;
+      --error-color: #dc2626;
+      --error-bg: #fef2f2;
+      --success-color: #059669;
+      --success-bg: #ecfdf5;
+      --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 16px;
+      line-height: 1.5;
+    }
+
+    /* Container */
+    .auth-container {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Brand Header Section */
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-logo-wrapper {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .brand-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .brand-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Authentication Card */
+    .auth-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+      width: 100%;
+      padding: 32px 28px;
+      transition: all 0.2s ease;
+    }
+
+    /* Tab Switcher */
+    .tab-switcher {
+      display: flex;
+      background-color: #f3f4f6;
+      border-radius: 24px;
+      padding: 4px;
+      margin-bottom: 26px;
+      position: relative;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 9px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: center;
+      user-select: none;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background-color: var(--accent-color);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    /* Forms */
+    .form-pane {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .form-pane.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 42px;
+      padding: 9px 14px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input::placeholder {
+      color: #9ca3af;
+      font-weight: 400;
+    }
+
+    .form-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .form-input.has-error {
+      border-color: var(--error-color);
+      background-color: var(--error-bg);
+    }
+
+    .form-input.has-toggle {
+      padding-right: 42px;
+    }
+
+    .toggle-password-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color 0.15s ease;
+    }
+
+    .toggle-password-btn:hover {
+      color: var(--text-main);
+    }
+
+    .toggle-password-btn svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    .field-hint {
+      font-size: 11.5px;
+      color: var(--error-color);
+      margin-top: 2px;
+      display: none;
+    }
+
+    .field-hint.visible {
+      display: block;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      margin-top: 6px;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 22px;
+      border: 1px solid var(--accent-color);
+      background-color: var(--accent-color);
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-submit:hover {
+      background-color: var(--accent-color-hover);
+      border-color: var(--accent-color-hover);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+
+    /* Secondary Footer Link */
+    .auth-footer-action {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .auth-link {
+      color: var(--accent-color);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      margin-left: 4px;
+      background: none;
+      border: none;
+      font-size: 13px;
+      padding: 0;
+      display: inline;
+    }
+
+    .auth-link:hover {
+      text-decoration: underline;
+      color: var(--accent-color-hover);
+    }
+
+    /* Subtle Notification / Status Banner (Client-side visual feedback) */
+    .status-banner {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .status-banner.error {
+      display: block;
+      background-color: var(--error-bg);
+      border: 1px solid #fecaca;
+      color: var(--error-color);
+    }
+
+    .status-banner.info {
+      display: block;
+      background-color: var(--accent-light);
+      border: 1px solid #bfdbfe;
+      color: var(--accent-color);
+    }
+
+    /* Bottom copyright / helper */
+    .page-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 480px) {
+      body {
+        padding: 16px 12px;
+        justify-content: flex-start;
+      }
+
+      .auth-card {
+        padding: 24px 18px;
+        border-radius: 14px;
+      }
+
+      .brand-header {
+        margin-top: 12px;
+        margin-bottom: 20px;
+      }
+
+      .brand-title {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="auth-container">
+
+    <!-- Application Logo and Title -->
+    <header class="brand-header">
+      <div class="brand-logo-wrapper">
+        <img class="brand-logo-img" src="Logo.jpeg" alt="AI Buyer Agent Logo" />
+      </div>
+      <h1 class="brand-title">AI Buyer Agent</h1>
+      <p class="brand-subtitle">Your Personal Shopping Assistant</p>
+    </header>
+
+    <!-- Main Authentication Box -->
+    <section class="auth-card" aria-label="Authentication Form">
+
+      <!-- Login / Create Account Switcher -->
+      <div class="tab-switcher" role="tablist" aria-label="Authentication options">
+        <button type="button" class="tab-btn active" id="tabLogin" role="tab" aria-selected="true" aria-controls="loginPane" onclick="switchMode('login')">
+          Login
+        </button>
+        <button type="button" class="tab-btn" id="tabRegister" role="tab" aria-selected="false" aria-controls="registerPane" onclick="switchMode('register')">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Feedback status container -->
+      <div class="status-banner" id="statusBanner" role="status" aria-live="polite"></div>
+
+      <!-- 1. LOGIN MODE -->
+      <form class="form-pane active" id="loginPane" onsubmit="handleLoginSubmit(event)" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email</label>
+          <div class="input-wrapper">
+            <input
+              type="email"
+              id="loginEmail"
+              class="form-input"
+              placeholder="Enter your email"
+              autocomplete="email"
+              required
+            />
+          </div>
+          <span class="field-hint" id="loginEmailHint">Please enter a valid email address.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="loginPassword"
+              class="form-input has-toggle"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password-btn"
+              onclick="togglePasswordVisibility('loginPassword', this)"
+              aria-label="Toggle password visibility"
+              title="Show / Hide password"
+            >
+              <!-- Eye Icon (hidden state) -->
+              <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+              </svg>
+              <svg class="icon-eye" style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+          <span class="field-hint" id="loginPasswordHint">Please enter your password.</span>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnSignIn">
+          Sign In
+        </button>
+
+        <div class="auth-footer-action">
+          Don't have an account?
+          <button type="button" class="auth-link" onclick="switchMode('register')">Create an account</button>
+        </div>
+      </form>
+
+      <!-- 2. CREATE ACCOUNT MODE -->
+      <form class="form-pane" id="registerPane" onsubmit="handleRegisterSubmit(event)" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="regName">Full Name</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="regName"
+              class="form-input"
+              placeholder="Enter your full name"
+              autocomplete="name"
+              required
+            />
+          </div>
+          <span class="field-hint" id="regNameHint">Please enter your full name.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regEmail">Email</label>
+          <div class="input-wrapper">
+            <input
+              type="email"
+              id="regEmail"
+              class="form-input"
+              placeholder="Enter your email"
+              autocomplete="email"
+              required
+            />
+          </div>
+          <span class="field-hint" id="regEmailHint">Please enter a valid email address.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regPassword">Password</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="regPassword"
+              class="form-input has-toggle"
+              placeholder="Create a password"
+              autocomplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password-btn"
+              onclick="togglePasswordVisibility('regPassword', this)"
+              aria-label="Toggle password visibility"
+              title="Show / Hide password"
+            >
+              <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+              </svg>
+              <svg class="icon-eye" style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+          <span class="field-hint" id="regPasswordHint">Please enter a password.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regConfirmPassword">Confirm Password</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="regConfirmPassword"
+              class="form-input has-toggle"
+              placeholder="Confirm your password"
+              autocomplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password-btn"
+              onclick="togglePasswordVisibility('regConfirmPassword', this)"
+              aria-label="Toggle password visibility"
+              title="Show / Hide password"
+            >
+              <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+              </svg>
+              <svg class="icon-eye" style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+          <span class="field-hint" id="regConfirmPasswordHint">Passwords must match.</span>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnCreateAccount">
+          Create Account
+        </button>
+
+        <div class="auth-footer-action">
+          Already have an account?
+          <button type="button" class="auth-link" onclick="switchMode('login')">Sign In</button>
+        </div>
+      </form>
+
+    </section>
+
+    <footer class="page-footer">
+      &copy; AI Buyer Agent &bull; Secure E-Commerce Assistant
+    </footer>
+
+  </main>
+
+  <script>
+    // Mode Switching
+    function switchMode(mode) {
+      const tabLogin = document.getElementById('tabLogin');
+      const tabRegister = document.getElementById('tabRegister');
+      const loginPane = document.getElementById('loginPane');
+      const registerPane = document.getElementById('registerPane');
+      const banner = document.getElementById('statusBanner');
+
+      // Clear any status banner message when switching
+      banner.className = 'status-banner';
+      banner.style.display = 'none';
+      banner.textContent = '';
+      clearErrors();
+
+      if (mode === 'login') {
+        tabLogin.classList.add('active');
+        tabLogin.setAttribute('aria-selected', 'true');
+        tabRegister.classList.remove('active');
+        tabRegister.setAttribute('aria-selected', 'false');
+
+        loginPane.classList.add('active');
+        registerPane.classList.remove('active');
+
+        // Focus first field
+        setTimeout(() => document.getElementById('loginEmail').focus(), 50);
+      } else {
+        tabRegister.classList.add('active');
+        tabRegister.setAttribute('aria-selected', 'true');
+        tabLogin.classList.remove('active');
+        tabLogin.setAttribute('aria-selected', 'false');
+
+        registerPane.classList.add('active');
+        loginPane.classList.remove('active');
+
+        // Focus first field
+        setTimeout(() => document.getElementById('regName').focus(), 50);
+      }
+    }
+
+    // Toggle Password Visibility
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const iconEyeOff = btn.querySelector('.icon-eye-off');
+      const iconEye = btn.querySelector('.icon-eye');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        iconEyeOff.style.display = 'none';
+        iconEye.style.display = 'block';
+      } else {
+        input.type = 'password';
+        iconEyeOff.style.display = 'block';
+        iconEye.style.display = 'none';
+      }
+    }
+
+    // Clear error highlights
+    function clearErrors() {
+      document.querySelectorAll('.form-input').forEach(inp => inp.classList.remove('has-error'));
+      document.querySelectorAll('.field-hint').forEach(hint => hint.classList.remove('visible'));
+    }
+
+    // Email validation helper
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    const apiBase = window.location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
+    const addressUrl = window.location.protocol === 'file:' ? 'address.html' : '/address';
+    const agent1Url = window.location.protocol === 'file:' ? 'agent1.html' : '/agent1';
+    const loginUrl = window.location.protocol === 'file:' ? 'login.html' : '/login';
+
+    // Live Sign In Submission
+    async function handleLoginSubmit(event) {
+      event.preventDefault();
+      clearErrors();
+
+      const emailInput = document.getElementById('loginEmail');
+      const passInput = document.getElementById('loginPassword');
+      const banner = document.getElementById('statusBanner');
+      const btnSignIn = document.getElementById('btnSignIn');
+      let hasError = false;
+
+      const email = emailInput.value.trim();
+      const password = passInput.value;
+
+      if (!email || !isValidEmail(email)) {
+        emailInput.classList.add('has-error');
+        document.getElementById('loginEmailHint').classList.add('visible');
+        hasError = true;
+      }
+
+      if (!password) {
+        passInput.classList.add('has-error');
+        document.getElementById('loginPasswordHint').classList.add('visible');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      btnSignIn.disabled = true;
+      btnSignIn.textContent = 'Signing in...';
+      banner.className = 'status-banner';
+      banner.style.display = 'none';
+
+      try {
+        const res = await fetch(`${apiBase}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          banner.className = 'status-banner error';
+          banner.textContent = data.detail || 'Invalid email or password.';
+          banner.style.display = 'block';
+          btnSignIn.disabled = false;
+          btnSignIn.textContent = 'Sign In';
+          return;
+        }
+
+        // Store auth token
+        localStorage.setItem('auth_token', data.token);
+
+        // Check whether user already has a saved delivery address
+        try {
+          const addrRes = await fetch(`${apiBase}/api/user/address`, {
+            headers: { 'Authorization': `Bearer ${data.token}` }
+          });
+          const addrData = await addrRes.json();
+
+          if (addrRes.ok && addrData && addrData.recipient_name && addrData.address_line1) {
+            // Existing user with address -> redirect directly to Agent 1
+            window.location.href = agent1Url;
+          } else {
+            // Existing user without address -> redirect to Address page
+            window.location.href = addressUrl;
+          }
+        } catch (e) {
+          window.location.href = agent1Url;
+        }
+      } catch (err) {
+        banner.className = 'status-banner error';
+        banner.textContent = 'Network error. Please make sure the backend server is running on http://127.0.0.1:8000.';
+        banner.style.display = 'block';
+        btnSignIn.disabled = false;
+        btnSignIn.textContent = 'Sign In';
+      }
+    }
+
+    // Live Register Submission
+    async function handleRegisterSubmit(event) {
+      event.preventDefault();
+      clearErrors();
+
+      const nameInput = document.getElementById('regName');
+      const emailInput = document.getElementById('regEmail');
+      const passInput = document.getElementById('regPassword');
+      const confirmInput = document.getElementById('regConfirmPassword');
+      const banner = document.getElementById('statusBanner');
+      const btnRegister = document.getElementById('btnCreateAccount');
+      let hasError = false;
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passInput.value;
+      const confirmPassword = confirmInput.value;
+
+      if (!name) {
+        nameInput.classList.add('has-error');
+        document.getElementById('regNameHint').classList.add('visible');
+        hasError = true;
+      }
+
+      if (!email || !isValidEmail(email)) {
+        emailInput.classList.add('has-error');
+        document.getElementById('regEmailHint').classList.add('visible');
+        hasError = true;
+      }
+
+      if (!password) {
+        passInput.classList.add('has-error');
+        document.getElementById('regPasswordHint').textContent = 'Please enter a password.';
+        document.getElementById('regPasswordHint').classList.add('visible');
+        hasError = true;
+      }
+
+      if (!confirmPassword || confirmPassword !== password) {
+        confirmInput.classList.add('has-error');
+        document.getElementById('regConfirmPasswordHint').classList.add('visible');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      btnRegister.disabled = true;
+      btnRegister.textContent = 'Creating Account...';
+      banner.className = 'status-banner';
+      banner.style.display = 'none';
+
+      try {
+        const res = await fetch(`${apiBase}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          banner.className = 'status-banner error';
+          banner.textContent = data.detail || 'Registration failed. Please try again.';
+          banner.style.display = 'block';
+          btnRegister.disabled = false;
+          btnRegister.textContent = 'Create Account';
+          return;
+        }
+
+        // Store auth token
+        localStorage.setItem('auth_token', data.token);
+
+        // New user -> redirect to address page
+        window.location.href = addressUrl;
+      } catch (err) {
+        banner.className = 'status-banner error';
+        banner.textContent = 'Network error. Please make sure the backend server is running on http://127.0.0.1:8000.';
+        btnRegister.disabled = false;
+        btnRegister.textContent = 'Create Account';
+      }
+    }
+  </script>
+</body>
+
+</html>

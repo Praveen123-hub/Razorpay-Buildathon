@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CartWave - Online Shopping India | Top Deals on Electronics, Fashion & More</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cw-blue: #2874f0;
+      --cw-blue-dark: #1255cc;
+      --cw-yellow: #ffe500;
+      --cw-orange: #fb641b;
+      --cw-orange-hover: #e0540d;
+      --cw-bg: #f1f3f6;
+      --cw-card-bg: #ffffff;
+      --cw-text-main: #212121;
+      --cw-text-muted: #878787;
+      --cw-rating-green: #388e3c;
+      --cw-in-stock: #388e3c;
+      --cw-out-of-stock: #d32f2f;
+      --cw-border: #e0e0e0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--cw-bg);
+      color: var(--cw-text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    .cw-header {
+      background-color: var(--cw-blue);
+      color: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .cw-header-main {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      gap: 24px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    .cw-brand {
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .cw-logo-title {
+      font-size: 22px;
+      font-weight: 800;
+      font-style: italic;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cw-logo-title span.wave {
+      color: var(--cw-yellow);
+    }
+
+    .cw-tagline {
+      font-size: 11px;
+      color: #f0f0f0;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .cw-tagline span.plus {
+      color: var(--cw-yellow);
+      font-weight: 700;
+    }
+
+    .cw-search-box {
+      flex: 1;
+      display: flex;
+      background: white;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 700px;
+    }
+
+    .cw-search-input {
+      flex: 1;
+      padding: 11px 16px;
+      border: none;
+      font-size: 14px;
+      outline: none;
+      color: #212121;
+    }
+
+    .cw-search-btn {
+      background: transparent;
+      border: none;
+      padding: 0 16px;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--cw-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cw-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .cw-nav-btn {
+      background: white;
+      color: var(--cw-blue);
+      font-weight: 700;
+      font-size: 14px;
+      padding: 7px 24px;
+      border-radius: 2px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .cw-nav-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .cw-nav-link {
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
+
+    .cw-nav-link:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .cw-cart-badge {
+      background: var(--cw-yellow);
+      color: #111;
+      font-size: 11px;
+      font-weight: 800;
+      border-radius: 10px;
+      padding: 1px 6px;
+      margin-left: 4px;
+    }
+
+    /* Category Bar */
+    .cw-cat-bar {
+      background: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 12px 24px;
+      gap: 24px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .cw-cat-bar::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .cw-cat-bar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .cw-cat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      text-align: center;
+      user-select: none;
+    }
+
+    .cw-cat-item:hover, .cw-cat-item.active {
+      color: var(--cw-blue);
+      background: #eef4ff;
+    }
+
+    .cw-cat-icon {
+      font-size: 22px;
+      display: block;
+      line-height: 1;
+    }
+
+    /* Main Container */
+    .cw-main {
+      max-width: 1440px;
+      width: 100%;
+      margin: 16px auto;
+      padding: 0 20px;
+      flex: 1;
+    }
+
+    .cw-hero {
+      background: linear-gradient(90deg, #1e57c8 0%, #2874f0 100%);
+      color: white;
+      border-radius: 8px;
+      padding: 22px 30px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 10px rgba(40,116,240,0.2);
+    }
+
+    .cw-hero h1 {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .cw-hero p {
+      font-size: 14px;
+      color: #e3edff;
+    }
+
+    .cw-hero-badge {
+      background: var(--cw-yellow);
+      color: #000;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Controls header */
+    .cw-section-header {
+      background: white;
+      padding: 14px 20px;
+      border-radius: 6px 6px 0 0;
+      border-bottom: 1px solid var(--cw-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cw-section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cw-text-main);
+    }
+
+    .cw-refresh-btn {
+      background: #f1f3f6;
+      border: 1px solid #dcdcdc;
+      color: #444;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+
+    .cw-refresh-btn:hover {
+      background: #e4e7ec;
+    }
+
+    /* Product Grid */
+    .cw-grid-wrapper {
+      background: white;
+      padding: 20px;
+      border-radius: 0 0 6px 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .cw-product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .cw-card {
+      border: 1px solid #efefef;
+      border-radius: 6px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      transition: box-shadow 0.2s, transform 0.2s;
+      cursor: pointer;
+      position: relative;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .cw-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .cw-visual {
+      background: #ffffff;
+      border-radius: 6px;
+      height: 140px;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      user-select: none;
+      overflow: hidden;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+
+    .cw-prod-img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      transition: transform 0.2s;
+    }
+
+    .cw-card:hover .cw-prod-img {
+      transform: scale(1.06);
+    }
+
+    .cw-cat-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cw-blue);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+      height: 16px;
+      line-height: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cw-prod-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cw-text-main);
+      line-height: 1.3;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 38px;
+      min-height: 38px;
+    }
+
+    .cw-rating-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--cw-rating-green);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      width: fit-content;
+      height: 20px;
+      margin-bottom: 8px;
+    }
+
+    .cw-desc {
+      font-size: 12px;
+      color: var(--cw-text-muted);
+      line-height: 1.4;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 34px;
+      min-height: 34px;
+      flex-grow: 0;
+    }
+
+    .cw-price-box {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 6px;
+      height: 24px;
+    }
+
+    .cw-price {
+      font-size: 19px;
+      font-weight: 800;
+      color: #212121;
+    }
+
+    .cw-assured-badge {
+      font-size: 10px;
+      color: var(--cw-blue);
+      font-weight: 800;
+      font-style: italic;
+    }
+
+    .cw-stock-status {
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      height: 16px;
+      line-height: 16px;
+    }
+
+    .cw-stock-status.in-stock {
+      color: var(--cw-in-stock);
+    }
+
+    .cw-stock-status.out-of-stock {
+      color: var(--cw-out-of-stock);
+    }
+
+    .cw-card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .cw-qty-ctrl {
+      display: grid;
+      grid-template-columns: 36px 1fr 36px;
+      align-items: center;
+      border: 1px solid var(--cw-border);
+      border-radius: 4px;
+      overflow: hidden;
+      height: 36px;
+      box-sizing: border-box;
+      background: #f1f3f6;
+    }
+
+    .cw-qty-btn {
+      background: #f1f3f6;
+      border: none;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #212121;
+      user-select: none;
+      box-sizing: border-box;
+      transition: background 0.1s;
+    }
+
+    .cw-qty-btn:hover:not(:disabled) {
+      background: #e0e0e0;
+    }
+
+    .cw-qty-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .cw-qty-val {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      background: #ffffff;
+      color: #212121;
+      border-left: 1px solid var(--cw-border);
+      border-right: 1px solid var(--cw-border);
+      box-sizing: border-box;
+    }
+
+    .cw-btn-add {
+      background: var(--cw-orange);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      transition: background 0.15s;
+      box-sizing: border-box;
+    }
+
+    .cw-btn-add:hover:not(:disabled) {
+      background: var(--cw-orange-hover);
+    }
+
+    .cw-btn-add:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Toast alert */
+    .cw-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #212121;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 6px;
+      border-left: 4px solid var(--cw-blue);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .cw-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Modal Overlay & Containers */
+    .cw-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .cw-modal-overlay.open {
+      display: flex;
+    }
+
+    .cw-modal-box {
+      background: white;
+      border-radius: 6px;
+      max-width: 760px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    .cw-modal-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--cw-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fbfbfb;
+    }
+
+    .cw-modal-header h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #212121;
+    }
+
+    .cw-modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .cw-modal-close:hover {
+      color: #000;
+    }
+
+    .cw-modal-body {
+      padding: 22px;
+    }
+
+    /* Details Layout */
+    .cw-details-layout {
+      display: flex;
+      gap: 24px;
+    }
+
+    @media (max-width: 600px) {
+      .cw-details-layout {
+        flex-direction: column;
+      }
+    }
+
+    .cw-details-img {
+      flex: 0 0 200px;
+      background: #fbfbfb;
+      border-radius: 6px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 90px;
+      border: 1px solid var(--cw-border);
+    }
+
+    .cw-details-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cw-specs-box {
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+
+    .cw-specs-title {
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .cw-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .cw-chip {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    /* Cart Layout */
+    .cw-cart-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .cw-cart-visual {
+      font-size: 32px;
+      background: #fbfbfb;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+
+    .cw-cart-info {
+      flex: 1;
+    }
+
+    .cw-cart-name {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .cw-cart-price {
+      font-weight: 800;
+      font-size: 15px;
+      color: #212121;
+    }
+
+    .cw-cart-total-bar {
+      margin-top: 20px;
+      background: #fbfbfb;
+      border: 1px solid #e0e0e0;
+      padding: 16px 20px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Orders History Layout */
+    .cw-order-card {
+      border: 1px solid var(--cw-border);
+      border-radius: 6px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .cw-order-head {
+      background: #f9f9f9;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      border-bottom: 1px solid var(--cw-border);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cw-order-body {
+      padding: 14px 18px;
+      background: white;
+    }
+
+    .cw-order-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+      border-bottom: 1px dashed #eee;
+    }
+
+    .cw-order-row:last-child {
+      border-bottom: none;
+    }
+
+    .cw-pill-paid {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .cw-pill-confirmed {
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    /* Footer */
+    .cw-footer {
+      background: #172337;
+      color: #878787;
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="cw-header">
+    <div class="cw-header-main">
+      <div class="cw-brand" onclick="cartwaveApp.showCatalog()">
+        <div class="cw-logo-title">Cart<span class="wave">Wave</span></div>
+        <div class="cw-tagline">Explore <span class="plus">Plus</span></div>
+      </div>
+
+      <div class="cw-search-box">
+        <input type="text" class="cw-search-input" id="cwSearchInput" placeholder="Search for products, brands and more" oninput="cartwaveApp.filterProducts()">
+        <button class="cw-search-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+
+      <div class="cw-nav-right">
+        <div class="cw-nav-link" onclick="cartwaveApp.openOrdersModal()">
+          My Orders
+        </div>
+
+        <div class="cw-nav-link" onclick="cartwaveApp.openCartModal()">
+          Cart
+          <span class="cw-cart-badge" id="cwCartBadge">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Bar -->
+    <div class="cw-cat-bar" id="cwCategoryBar">
+      <div class="cw-cat-item active" onclick="cartwaveApp.selectCategory('')">
+        <span>All Products</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="cw-main">
+    <div class="cw-hero" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+      <div style="flex: 1; min-width: 260px;">
+        <span style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9; display: block; margin-bottom: 4px; font-weight: 700;">CARTWAVE</span>
+        <h1 style="margin: 0; font-size: 26px; margin-bottom: 4px;">Welcome To CartWave</h1>
+        <p style="margin: 0; font-size: 13px; color: #e0e7ff;">Official Partner Merchant Storefront</p>
+      </div>
+      <div style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.28); backdrop-filter: blur(8px); border-radius: 8px; padding: 12px 18px; max-width: 520px; font-size: 12.5px; color: #ffffff; line-height: 1.45;">
+        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #ffe11b; margin-bottom: 4px; font-size: 12.5px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          Reference &amp; Live Order Reflection Only
+        </div>
+        <div>
+          This website is for <strong>reference and live verification only</strong>. Orders and cart details placed through the <strong>AI Buyer Agent</strong> will be reflected here automatically. Please use the AI Buyer Agent to search, compare, and place orders.
+        </div>
+      </div>
+    </div>
+
+    <div class="cw-section-header">
+      <div class="cw-section-title" id="cwHeading">All Products (CartWave Catalog)</div>
+      <button class="cw-refresh-btn" onclick="cartwaveApp.fetchData()">
+        Refresh Live Stock
+      </button>
+    </div>
+
+    <div class="cw-grid-wrapper">
+      <div class="cw-product-grid" id="cwProductGrid">
+        <p style="padding: 20px; color: #878787;">Loading CartWave catalog from backend API...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Product Details Modal -->
+  <div class="cw-modal-overlay" id="cwDetailsModal">
+    <div class="cw-modal-box">
+      <div class="cw-modal-header">
+        <h2 id="cwModalCategory">Product Details</h2>
+        <button class="cw-modal-close" onclick="cartwaveApp.closeModal('cwDetailsModal')">&times;</button>
+      </div>
+      <div class="cw-modal-body" id="cwDetailsBody">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div class="cw-modal-overlay" id="cwCartModal">
+    <div class="cw-modal-box">
+      <div class="cw-modal-header">
+        <h2>CartWave Shopping Cart</h2>
+        <button class="cw-modal-close" onclick="cartwaveApp.closeModal('cwCartModal')">&times;</button>
+      </div>
+      <div class="cw-modal-body" id="cwCartBody">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Modal -->
+  <div class="cw-modal-overlay" id="cwOrdersModal">
+    <div class="cw-modal-box" style="max-width: 850px;">
+      <div class="cw-modal-header">
+        <h2>CartWave - Order History</h2>
+        <button class="cw-modal-close" onclick="cartwaveApp.closeModal('cwOrdersModal')">&times;</button>
+      </div>
+      <div class="cw-modal-body" id="cwOrdersBody">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="cw-footer">
+    CartWave Mock Merchant Storefront &copy; 2026. Single source of truth via Merchant Data Access Layer.
+  </footer>
+
+  <script>
+    // Self-contained CartWave Merchant Storefront App
+    const cartwaveApp = {
+      merchant: 'cartwave',
+      apiBase: (window.location.origin && window.location.origin.startsWith('http')) ? '' : 'http://localhost:8000',
+      products: [],
+      inventoryMap: {},
+      cart: {}, // { p_id: { quantity, product } }
+      cardQuantities: {}, // { p_id: quantity }
+      selectedCategory: '',
+      toastTimeout: null,
+
+      showToast(msg) {
+        let toast = document.getElementById('cwToast');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'cwToast';
+          toast.className = 'cw-toast';
+          document.body.appendChild(toast);
+        }
+        toast.innerText = msg;
+        toast.classList.add('show');
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      },
+
+      getEmoji(p) {
+        const cat = (p.category || '').toLowerCase();
+        const name = (p.p_name || '').toLowerCase();
+
+        if (cat.includes('footwear') || name.includes('shoe') || name.includes('walker') || name.includes('boot')) {
+          if (name.includes('sock')) return '🧦';
+          if (name.includes('insole')) return '👟';
+          return '👟';
+        }
+        if (cat.includes('apparel') || name.includes('shirt') || name.includes('t-shirt') || name.includes('hoodie')) {
+          if (name.includes('belt')) return '👔';
+          if (name.includes('cap')) return '🧢';
+          if (name.includes('pant') || name.includes('jean') || name.includes('short')) return '👖';
+          if (name.includes('jacket')) return '🧥';
+          return '👕';
+        }
+        if (cat.includes('electronics') || name.includes('earbud') || name.includes('speaker')) {
+          if (name.includes('watch')) return '⌚';
+          if (name.includes('power') || name.includes('charger')) return '🔋';
+          if (name.includes('cable')) return '🔌';
+          if (name.includes('keyboard')) return '⌨️';
+          if (name.includes('mouse')) return '🖱️';
+          if (name.includes('stand')) return '💻';
+          return '🎧';
+        }
+        if (cat.includes('fitness') || name.includes('gym') || name.includes('yoga')) {
+          if (name.includes('bottle') || name.includes('shaker')) return '🥤';
+          if (name.includes('mat')) return '🧘';
+          if (name.includes('bag')) return '🎒';
+          if (name.includes('rope')) return '⚡';
+          return '🏋️';
+        }
+        if (cat.includes('personal care') || name.includes('trimmer') || name.includes('brush')) {
+          if (name.includes('tooth')) return '🪥';
+          if (name.includes('perfume')) return '🧴';
+          if (name.includes('sunscreen') || name.includes('cleanser')) return '🧴';
+          if (name.includes('lip')) return '💄';
+          return '🪒';
+        }
+        if (cat.includes('home') || cat.includes('lifestyle')) {
+          if (name.includes('wallet')) return '👛';
+          if (name.includes('sunglass')) return '🕶️';
+          if (name.includes('backpack')) return '🎒';
+          if (name.includes('mug')) return '☕';
+          if (name.includes('lamp')) return '💡';
+          return '🏠';
+        }
+        return '📦';
+      },
+
+      async init() {
+        await this.fetchData();
+        this.renderCategories();
+        this.pullCartFromBackend();
+        setInterval(() => this.pullCartFromBackend(), 1500);
+      },
+
+      async syncCartWithBackend() {
+        const sessionId = localStorage.getItem('agent_active_session_id');
+        if (!sessionId) return;
+        try {
+          const getRes = await fetch(`${this.apiBase}/api/session/${sessionId}/cart`);
+          if (!getRes.ok) return;
+          const masterData = await getRes.json();
+          const otherItems = (masterData.cart_contents || []).filter(item => item.merchant !== this.merchant);
+          const localItems = Object.values(this.cart).map(i => ({
+            p_id: i.product.p_id,
+            p_name: i.product.p_name,
+            merchant: this.merchant,
+            price: i.product.price,
+            rating: i.product.rating || 0.0,
+            quantity: i.quantity
+          }));
+          const combined = [...otherItems, ...localItems];
+          await fetch(`${this.apiBase}/api/session/${sessionId}/cart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_contents: combined })
+          });
+        } catch (err) {
+          console.error("Failed to sync cart to backend:", err);
+        }
+      },
+
+      async pullCartFromBackend() {
+        const sessionId = localStorage.getItem('agent_active_session_id');
+        if (!sessionId) return;
+        try {
+          const res = await fetch(`${this.apiBase}/api/session/${sessionId}/cart`);
+          if (!res.ok) return;
+          const data = await res.json();
+          const merchantItems = (data.cart_contents || []).filter(item => item.merchant === this.merchant);
+          const newCart = {};
+          merchantItems.forEach(item => {
+            const product = this.products.find(p => p.p_id === item.p_id);
+            if (product) {
+              newCart[item.p_id] = {
+                product: product,
+                quantity: item.quantity
+              };
+            }
+          });
+          const cartKeys = Object.keys(this.cart);
+          const newCartKeys = Object.keys(newCart);
+          let changed = (cartKeys.length !== newCartKeys.length);
+          if (!changed) {
+            for (let k of cartKeys) {
+              if (!newCart[k] || newCart[k].quantity !== this.cart[k].quantity) {
+                changed = true;
+                break;
+              }
+            }
+          }
+          if (changed) {
+            this.cart = newCart;
+            this.updateCartBadge();
+            this.renderProducts();
+            const cartModal = document.getElementById('cwCartModal');
+            if (cartModal && cartModal.classList.contains('open')) {
+              this.openCartModal();
+            }
+          }
+        } catch (err) {
+          console.error("Failed to pull cart from backend:", err);
+        }
+      },
+
+      async fetchData() {
+        try {
+          const [prodRes, invRes] = await Promise.all([
+            fetch(`${this.apiBase}/api/${this.merchant}/products`),
+            fetch(`${this.apiBase}/api/${this.merchant}/inventory`)
+          ]);
+
+          if (!prodRes.ok || !invRes.ok) {
+            throw new Error('Failed to load CartWave merchant data');
+          }
+
+          this.products = await prodRes.json();
+          const invList = await invRes.json();
+          this.inventoryMap = {};
+          invList.forEach(item => {
+            this.inventoryMap[item.p_id] = item.stock;
+          });
+
+          this.renderProducts();
+          this.updateCartBadge();
+        } catch (err) {
+          console.error('CartWave fetch error:', err);
+          document.getElementById('cwProductGrid').innerHTML = `
+            <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: #d32f2f;">
+              <h3>Unable to connect to CartWave backend API</h3>
+              <p style="margin-top: 8px;">Please ensure the FastAPI server is running.</p>
+            </div>
+          `;
+        }
+      },
+
+      renderCategories() {
+        const categories = [...new Set(this.products.map(p => p.category))].sort();
+        const bar = document.getElementById('cwCategoryBar');
+
+        const catIcons = {
+          'Footwear': '👟',
+          'Footwear Accessories': '🧦',
+          'Apparel': '👕',
+          'Apparel Accessories': '🧢',
+          'Electronics': '🎧',
+          'Electronics Accessories': '🔌',
+          'Fitness Gear': '🏋️',
+          'Personal Care': '🧴',
+          'Lifestyle Accessories': '🕶️',
+          'Home & Kitchen': '☕'
+        };
+
+        bar.innerHTML = `
+          <div class="cw-cat-item ${this.selectedCategory === '' ? 'active' : ''}" onclick="cartwaveApp.selectCategory('')">
+            <span class="cw-cat-icon">🏷️</span>
+            <span>All Products</span>
+          </div>
+        `;
+
+        categories.forEach(cat => {
+          const item = document.createElement('div');
+          item.className = 'cw-cat-item ' + (this.selectedCategory === cat ? 'active' : '');
+          item.onclick = () => this.selectCategory(cat);
+          item.innerHTML = `
+            <span class="cw-cat-icon">${catIcons[cat] || '📦'}</span>
+            <span>${cat}</span>
+          `;
+          bar.appendChild(item);
+        });
+      },
+
+      selectCategory(cat) {
+        this.selectedCategory = cat;
+        this.renderCategories();
+        this.renderProducts();
+      },
+
+      filterProducts() {
+        this.renderProducts();
+      },
+
+      renderProducts() {
+        const query = (document.getElementById('cwSearchInput').value || '').toLowerCase().trim();
+        const grid = document.getElementById('cwProductGrid');
+
+        const displayItems = [];
+        this.products.forEach(p => {
+          const colors = (p.attributes && Array.isArray(p.attributes.colors) && p.attributes.colors.length > 0) ? p.attributes.colors : null;
+          if (colors) {
+            colors.forEach(c => {
+              const cleanColor = String(c).replace(/\s+/g, '_');
+              const fileName = `${p.p_id}_${cleanColor}.jpg`;
+              displayItems.push({
+                ...p,
+                color: c,
+                cleanColor: cleanColor,
+                fileName: fileName,
+                variantKey: `${p.p_id}__${cleanColor}`,
+                imgSrc: `Images/${fileName}`
+              });
+            });
+          } else {
+            const fileName = `${p.p_id}.jpg`;
+            displayItems.push({
+              ...p,
+              color: null,
+              cleanColor: null,
+              fileName: fileName,
+              variantKey: p.p_id,
+              imgSrc: `Images/${fileName}`
+            });
+          }
+        });
+
+        const filtered = displayItems.filter(item => {
+          const matchesCat = !this.selectedCategory || item.category === this.selectedCategory;
+          const matchesQuery = !query || 
+            item.p_name.toLowerCase().includes(query) || 
+            item.description.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query) ||
+            (item.color && item.color.toLowerCase().includes(query));
+          return matchesCat && matchesQuery;
+        });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #878787;">No products found matching your search.</div>';
+          return;
+        }
+
+        grid.innerHTML = filtered.map(item => {
+          const p_id = item.p_id;
+          const key = item.variantKey;
+          const stock = this.inventoryMap[p_id] ?? 0;
+          const inStock = stock > 0;
+          const cartItem = this.cart[key];
+
+          if (this.cardQuantities[key] === undefined) {
+            this.cardQuantities[key] = cartItem ? cartItem.quantity : 0;
+          }
+          if (inStock && this.cardQuantities[key] > stock) {
+            this.cardQuantities[key] = stock;
+          }
+          if (this.cardQuantities[key] < 0) {
+            this.cardQuantities[key] = 0;
+          }
+          const selectedQty = inStock ? this.cardQuantities[key] : 0;
+
+          const colorBadge = item.color ? `
+            <div style="display: flex; align-items: center; gap: 6px; margin: 4px 0;">
+              <span style="font-size: 11px; font-weight: 700; background: #e0f2fe; color: #0284c7; padding: 2px 7px; border-radius: 4px; border: 1px solid #bae6fd;">
+                Color: ${item.color}
+              </span>
+            </div>
+          ` : '';
+
+          return `
+            <div class="cw-card" onclick="cartwaveApp.openProductDetails('${p_id}', '${item.color || ''}')">
+              <div class="cw-visual">
+                <img src="${item.imgSrc}" alt="${item.p_name}${item.color ? ' - ' + item.color : ''}" class="cw-prod-img" loading="lazy" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${item.fileName}';" />
+              </div>
+              <div class="cw-cat-pill">${item.category}</div>
+              <div class="cw-prod-name" title="${item.p_name}">${item.p_name}</div>
+              ${colorBadge}
+              <div class="cw-rating-pill">
+                <span>${item.rating.toFixed(1)}</span>
+                <span>★</span>
+              </div>
+              <div class="cw-desc">${item.description}</div>
+              <div class="cw-price-box">
+                <span class="cw-price">₹${item.price.toLocaleString('en-IN')}</span>
+                <span class="cw-assured-badge">CartWave Verified</span>
+              </div>
+              <div class="cw-stock-status ${inStock ? 'in-stock' : 'out-of-stock'}">
+                ${inStock ? `In Stock (${stock} available)` : 'Out of Stock'}
+              </div>
+              <div class="cw-card-actions" onclick="event.stopPropagation()">
+                <div class="cw-qty-ctrl">
+                  <button class="cw-qty-btn" id="btnMinus_${key}" onclick="cartwaveApp.adjustCardQty('${key}', -1)" ${!inStock || selectedQty <= 0 ? 'disabled' : ''}>−</button>
+                  <div class="cw-qty-val" id="cwCardQty_${key}">${selectedQty}</div>
+                  <button class="cw-qty-btn" id="btnPlus_${key}" onclick="cartwaveApp.adjustCardQty('${key}', 1)" ${!inStock || selectedQty >= stock ? 'disabled' : ''}>+</button>
+                </div>
+                <button class="cw-btn-add" id="btnAdd_${key}" onclick="cartwaveApp.addToCart('${key}')" ${!inStock ? 'disabled' : ''}>
+                  ${!inStock ? 'Out of Stock' : (cartItem ? 'Update in Cart' : 'Add to Cart')}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      adjustCardQty(key, delta) {
+        const p_id = key.includes('__') ? key.split('__')[0] : key;
+        const stock = this.inventoryMap[p_id] || 0;
+        if (stock <= 0) return;
+
+        let currentQty = this.cardQuantities[key];
+        if (currentQty === undefined) {
+          currentQty = this.cart[key] ? this.cart[key].quantity : 0;
+        }
+
+        let newQty = currentQty + delta;
+        if (newQty < 0) newQty = 0;
+        if (newQty > stock) newQty = stock;
+
+        this.cardQuantities[key] = newQty;
+
+        const display = document.getElementById(`cwCardQty_${key}`);
+        if (display) {
+          display.innerText = newQty;
+        }
+
+        const btnMinus = document.getElementById(`btnMinus_${key}`);
+        const btnPlus = document.getElementById(`btnPlus_${key}`);
+        if (btnMinus) {
+          btnMinus.disabled = (newQty <= 0);
+        }
+        if (btnPlus) {
+          btnPlus.disabled = (newQty >= stock);
+        }
+
+        if (this.cart[key]) {
+          if (newQty === 0) {
+            delete this.cart[key];
+          } else {
+            this.cart[key].quantity = newQty;
+          }
+          this.updateCartBadge();
+          const btnAdd = document.getElementById(`btnAdd_${key}`);
+          if (btnAdd) {
+            btnAdd.innerText = this.cart[key] ? 'Update in Cart' : 'Add to Cart';
+          }
+          this.syncCartWithBackend();
+        }
+      },
+
+      addToCart(key) {
+        const p_id = key.includes('__') ? key.split('__')[0] : key;
+        const color = key.includes('__') ? key.split('__')[1].replace(/_/g, ' ') : null;
+        const product = this.products.find(p => p.p_id === p_id);
+        const stock = this.inventoryMap[p_id] || 0;
+        if (!product || stock <= 0) return;
+
+        let qty = this.cardQuantities[key];
+        if (qty === undefined) {
+          const qtyEl = document.getElementById(`cwCardQty_${key}`);
+          qty = qtyEl ? parseInt(qtyEl.innerText) : 0;
+        }
+
+        if (qty <= 0) {
+          this.showToast("Please select a quantity first.");
+          return;
+        }
+
+        const finalQty = Math.max(1, Math.min(qty, stock));
+        this.cardQuantities[key] = finalQty;
+
+        this.cart[key] = {
+          product: product,
+          quantity: finalQty,
+          color: color,
+          key: key
+        };
+
+        this.updateCartBadge();
+        this.renderProducts();
+        this.syncCartWithBackend();
+        this.showToast(`Added ${finalQty} ${product.p_name}${color ? ' (' + color + ')' : ''} to cart.`);
+      },
+
+      updateCartBadge() {
+        const count = Object.values(this.cart).reduce((acc, item) => acc + item.quantity, 0);
+        document.getElementById('cwCartBadge').innerText = count;
+      },
+
+      openProductDetails(p_id, color = '') {
+        const p = this.products.find(item => item.p_id === p_id);
+        if (!p) return;
+        const stock = this.inventoryMap[p_id] || 0;
+        const inStock = stock > 0;
+        const cleanColor = color ? color.replace(/\s+/g, '_') : null;
+        const fileName = cleanColor ? `${p.p_id}_${cleanColor}.jpg` : `${p.p_id}.jpg`;
+        const key = cleanColor ? `${p.p_id}__${cleanColor}` : p.p_id;
+        const cartItem = this.cart[key];
+        const qty = cartItem ? cartItem.quantity : 1;
+        const imgSrc = `Images/${fileName}`;
+
+        let attrHtml = '';
+        if (p.attributes && Object.keys(p.attributes).length > 0) {
+          attrHtml = `
+            <div class="cw-specs-box">
+              <div class="cw-specs-title">General Specifications</div>
+              <div class="cw-chips">
+                ${Object.entries(p.attributes).map(([k, v]) => `
+                  <span class="cw-chip"><strong>${k}:</strong> ${Array.isArray(v) ? v.join(', ') : v}</span>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        const colorBadgeHtml = color ? `
+          <div style="margin: 8px 0;">
+            <span style="font-size: 13px; font-weight: 700; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 4px; border: 1px solid #bae6fd;">
+              Selected Color: ${color}
+            </span>
+          </div>
+        ` : '';
+
+        document.getElementById('cwModalCategory').innerText = `${p.category} | ${p.p_id}`;
+        document.getElementById('cwDetailsBody').innerHTML = `
+          <div class="cw-details-layout">
+            <div class="cw-details-img" style="display:flex; align-items:center; justify-content:center; padding:12px; background:#ffffff; border:1px solid #eee; border-radius:6px; min-height: 220px;">
+              <img src="${imgSrc}" alt="${p.p_name}" style="max-width:100%; max-height:220px; object-fit:contain; border-radius:6px;" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${fileName}';" />
+            </div>
+            <div class="cw-details-content">
+              <h2 style="font-size: 19px; font-weight: 800; color: #212121;">${p.p_name}</h2>
+              ${colorBadgeHtml}
+              <div class="cw-rating-pill">
+                <span>${p.rating.toFixed(1)}</span>
+                <span>★ Certified Customer Rating</span>
+              </div>
+              <div class="cw-price-box">
+                <span class="cw-price" style="font-size: 26px;">₹${p.price.toLocaleString('en-IN')}</span>
+                <span class="cw-assured-badge" style="font-size: 13px;">CartWave Plus</span>
+              </div>
+              <div class="cw-stock-status ${inStock ? 'in-stock' : 'out-of-stock'}" style="font-size: 13px;">
+                ${inStock ? `✓ In Stock (${stock} available for purchase)` : '✗ Currently Sold Out'}
+              </div>
+              <p style="font-size: 13px; line-height: 1.5; color: #555;">${p.description}</p>
+              ${attrHtml}
+              <div style="margin-top: 12px;">
+                <button class="cw-btn-add" style="width: 100%; padding: 12px; font-size: 14px;" onclick="cartwaveApp.addToCart('${key}'); cartwaveApp.closeModal('cwDetailsModal');" ${!inStock ? 'disabled' : ''}>
+                  ${!inStock ? 'Out of Stock' : 'Add to CartWave Cart'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('cwDetailsModal').classList.add('open');
+      },
+
+      openCartModal() {
+        const items = Object.values(this.cart);
+        const body = document.getElementById('cwCartBody');
+
+        if (items.length === 0) {
+          body.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+              <div style="font-size: 54px; margin-bottom: 12px;">🛒</div>
+              <h3 style="color: #212121;">Your CartWave Cart is Empty!</h3>
+              <p style="color: #878787; margin-top: 6px;">Explore our catalog to add products.</p>
+            </div>
+          `;
+        } else {
+          let total = 0;
+          const itemsHtml = items.map(item => {
+            const p = item.product;
+            const key = item.key || p.p_id;
+            const stock = this.inventoryMap[p.p_id] || 0;
+            const subtotal = p.price * item.quantity;
+            total += subtotal;
+            const cleanColor = item.color ? item.color.replace(/\s+/g, '_') : null;
+            const fileName = cleanColor ? `${p.p_id}_${cleanColor}.jpg` : `${p.p_id}.jpg`;
+            const imgSrc = `Images/${fileName}`;
+            const colorTag = item.color ? `<span style="font-size: 11px; font-weight: 700; background: #e0f2fe; color: #0284c7; padding: 1px 6px; border-radius: 4px; margin-left: 6px;">Color: ${item.color}</span>` : '';
+
+            return `
+              <div class="cw-cart-item">
+                <div class="cw-cart-visual" style="display:flex; align-items:center; justify-content:center;">
+                  <img src="${imgSrc}" alt="${p.p_name}" style="width:52px; height:52px; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #eee; padding:2px;" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${fileName}';" />
+                </div>
+                <div class="cw-cart-info">
+                  <div class="cw-cart-name">${p.p_name} ${colorTag}</div>
+                  <div class="cw-cart-price">₹${p.price.toLocaleString('en-IN')} × ${item.quantity} = ₹${subtotal.toLocaleString('en-IN')}</div>
+                  <div style="font-size: 11px; color: #878787; margin-top: 2px;">Available Stock: ${stock}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div class="cw-qty-ctrl">
+                    <button class="cw-qty-btn" onclick="cartwaveApp.updateCartItemQty('${key}', -1)">−</button>
+                    <div class="cw-qty-val" style="width: 36px;">${item.quantity}</div>
+                    <button class="cw-qty-btn" onclick="cartwaveApp.updateCartItemQty('${key}', 1)" ${item.quantity >= stock ? 'disabled' : ''}>+</button>
+                  </div>
+                  <button style="background: none; border: none; color: #2874f0; font-weight: 700; cursor: pointer; font-size: 13px;" onclick="cartwaveApp.removeCartItem('${key}')">REMOVE</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          body.innerHTML = `
+            <div>
+              ${itemsHtml}
+              <div class="cw-cart-total-bar">
+                <div style="font-size: 16px; font-weight: 700; color: #212121;">Cart Total Amount:</div>
+                <div style="font-size: 20px; font-weight: 800; color: #2874f0;">₹${total.toLocaleString('en-IN')}</div>
+              </div>
+              <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+                <button class="cw-btn-add" id="btnCartwaveOrder" style="padding: 12px 30px; font-size: 15px; font-weight: 800; background: var(--cw-orange); width: 100%; max-width: 280px;" onclick="cartwaveApp.placeOrder()">
+                  PLACE ORDER
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById('cwCartModal').classList.add('open');
+      },
+
+      async placeOrder() {
+        const items = Object.values(this.cart);
+        if (items.length === 0) {
+          this.showToast("Your CartWave cart is empty.");
+          return;
+        }
+
+        const btn = document.getElementById('btnCartwaveOrder');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = "Placing Order...";
+        }
+
+        const products = items.map(i => ({
+          p_id: i.product.p_id,
+          quantity: i.quantity,
+          unit_price: i.product.price,
+          color: i.color || null
+        }));
+
+        const total_amount = products.reduce((sum, i) => sum + (i.quantity * i.unit_price), 0);
+
+        try {
+          const res = await fetch(`${this.apiBase}/api/${this.merchant}/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              products: products,
+              total_amount: total_amount,
+              payment_status: 'paid',
+              order_status: 'confirmed'
+            })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || 'Backend order placement failed');
+          }
+
+          const newOrder = await res.json();
+
+          // Clear cart on successful purchase
+          this.cart = {};
+          this.cardQuantities = {};
+          this.updateCartBadge();
+          await this.syncCartWithBackend();
+          await this.fetchData(); // Refresh live inventory and catalog
+
+          this.closeModal('cwCartModal');
+          this.showToast(`Order #${newOrder.order_id} placed successfully!`);
+          this.openOrdersModal(); // Show newly created order in My Orders
+        } catch (err) {
+          console.error('Purchase error:', err);
+          this.showToast(`Purchase failed: ${err.message}`);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "PLACE ORDER";
+          }
+        }
+      },
+
+      updateCartItemQty(key, delta) {
+        if (!this.cart[key]) return;
+        const p_id = key.includes('__') ? key.split('__')[0] : key;
+        const stock = this.inventoryMap[p_id] || 0;
+        let newQty = this.cart[key].quantity + delta;
+
+        if (newQty <= 0) {
+          delete this.cart[key];
+        } else {
+          this.cart[key].quantity = Math.min(newQty, stock);
+        }
+
+        this.updateCartBadge();
+        this.renderProducts();
+        this.syncCartWithBackend();
+        this.openCartModal();
+      },
+
+      removeCartItem(key) {
+        delete this.cart[key];
+        this.updateCartBadge();
+        this.renderProducts();
+        this.syncCartWithBackend();
+        this.openCartModal();
+      },
+
+      async openOrdersModal() {
+        const body = document.getElementById('cwOrdersBody');
+        body.innerHTML = '<p style="padding: 20px; color: #878787;">Loading your CartWave orders...</p>';
+        document.getElementById('cwOrdersModal').classList.add('open');
+
+        try {
+          const res = await fetch(`${this.apiBase}/api/${this.merchant}/orders?user_only=true`);
+          if (!res.ok) throw new Error('Failed to load orders');
+          const orders = await res.json();
+
+          if (!orders || orders.length === 0) {
+            body.innerHTML = `
+              <div style="text-align: center; padding: 48px 20px;">
+                <div style="font-size: 52px; margin-bottom: 12px;">📦</div>
+                <h3 style="color: #212121; margin-bottom: 8px;">No orders yet</h3>
+                <p style="color: #878787; font-size: 14px; max-width: 440px; margin: 0 auto;">You have not placed any orders on CartWave yet. Once Agent 1 completes a purchase, your confirmed order details will appear here.</p>
+              </div>
+            `;
+            return;
+          }
+
+          const sortedOrders = [...orders].reverse();
+
+          body.innerHTML = `
+            <div>
+              ${sortedOrders.map(o => `
+                <div class="cw-order-card">
+                  <div class="cw-order-head">
+                    <div><strong>Order ID:</strong> ${o.order_id}</div>
+                    <div><strong>Date:</strong> ${new Date(o.created_at).toLocaleString('en-IN')}</div>
+                    <div><strong>Total:</strong> ₹${o.total_amount.toLocaleString('en-IN')}</div>
+                    <div>
+                      <span class="cw-pill-paid">${o.payment_status}</span>
+                      <span class="cw-pill-confirmed">${o.order_status}</span>
+                    </div>
+                  </div>
+                  <div class="cw-order-body">
+                    ${o.products.map(item => {
+                      const prod = this.products.find(p => p.p_id === item.p_id);
+                      const name = prod ? prod.p_name : item.p_id;
+                      const itemColor = item.color || (item.attributes && item.attributes.color);
+                      const itemSize = item.size || (item.attributes && item.attributes.size);
+                      const colorBadge = itemColor ? `<span style="font-size: 11.5px; color: #1e40af; background: #dbeafe; padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: 600;">Color: ${itemColor}</span>` : '';
+                      const sizeBadge = itemSize ? `<span style="font-size: 11.5px; color: #374151; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Size: ${itemSize}</span>` : '';
+                      const cleanColor = itemColor ? itemColor.replace(/\s+/g, '_') : null;
+                      const fileName = cleanColor ? `${item.p_id}_${cleanColor}.jpg` : `${item.p_id}.jpg`;
+                      const imgSrc = `Images/${fileName}`;
+                      return `
+                        <div class="cw-order-row" style="display:flex; align-items:center; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                          <div style="display:flex; align-items:center;">
+                            <img src="${imgSrc}" alt="${name}" style="width:48px; height:48px; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #eee; margin-right:12px; padding:2px;" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${fileName}';" />
+                            <div>
+                              <div><strong>${name}</strong></div>
+                              <div style="font-size: 12px; color: #878787; margin-top: 3px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                                <span style="margin-right: 6px;">ID: ${item.p_id}</span>
+                                ${colorBadge}
+                                ${sizeBadge}
+                              </div>
+                            </div>
+                          </div>
+                          <div>${item.quantity} × ₹${item.unit_price.toLocaleString('en-IN')} = <strong>₹${(item.quantity * item.unit_price).toLocaleString('en-IN')}</strong></div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } catch (err) {
+          body.innerHTML = `<p style="color: #d32f2f; padding: 20px;">Error loading CartWave orders: ${err.message}</p>`;
+        }
+      },
+
+      closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+      },
+
+      showCatalog() {
+        this.selectCategory('');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    // Initialize application on page load
+    document.addEventListener('DOMContentLoaded', () => cartwaveApp.init());
+  </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+[
+  {
+    "p_id": "SHOE_001",
+    "stock": 31
+  },
+  {
+    "p_id": "SHOE_002",
+    "stock": 35
+  },
+  {
+    "p_id": "SHOE_003",
+    "stock": 35
+  },
+  {
+    "p_id": "SHOE_004",
+    "stock": 35
+  },
+  {
+    "p_id": "SHOE_005",
+    "stock": 35
+  },
+  {
+    "p_id": "SOCK_001",
+    "stock": 31
+  },
+  {
+    "p_id": "SOCK_002",
+    "stock": 35
+  },
+  {
+    "p_id": "INSO_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SHIRT_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SHIRT_002",
+    "stock": 35
+  },
+  {
+    "p_id": "SHIRT_003",
+    "stock": 35
+  },
+  {
+    "p_id": "JEANS_001",
+    "stock": 35
+  },
+  {
+    "p_id": "PANT_001",
+    "stock": 35
+  },
+  {
+    "p_id": "HOOD_001",
+    "stock": 35
+  },
+  {
+    "p_id": "JACK_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SHOR_001",
+    "stock": 35
+  },
+  {
+    "p_id": "BELT_001",
+    "stock": 35
+  },
+  {
+    "p_id": "CAP_001",
+    "stock": 35
+  },
+  {
+    "p_id": "EAR_001",
+    "stock": 35
+  },
+  {
+    "p_id": "WATCH_001",
+    "stock": 35
+  },
+  {
+    "p_id": "POW_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SPK_001",
+    "stock": 35
+  },
+  {
+    "p_id": "KEY_001",
+    "stock": 35
+  },
+  {
+    "p_id": "CHG_001",
+    "stock": 35
+  },
+  {
+    "p_id": "CAB_001",
+    "stock": 35
+  },
+  {
+    "p_id": "MOU_001",
+    "stock": 35
+  },
+  {
+    "p_id": "STND_001",
+    "stock": 35
+  },
+  {
+    "p_id": "CASE_001",
+    "stock": 35
+  },
+  {
+    "p_id": "STRAP_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SCRN_001",
+    "stock": 35
+  },
+  {
+    "p_id": "BOT_001",
+    "stock": 35
+  },
+  {
+    "p_id": "YOGA_001",
+    "stock": 35
+  },
+  {
+    "p_id": "BAND_001",
+    "stock": 35
+  },
+  {
+    "p_id": "BAG_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SHAK_001",
+    "stock": 35
+  },
+  {
+    "p_id": "ROPE_001",
+    "stock": 35
+  },
+  {
+    "p_id": "FOAM_001",
+    "stock": 35
+  },
+  {
+    "p_id": "MUG_001",
+    "stock": 35
+  },
+  {
+    "p_id": "COAST_001",
+    "stock": 35
+  },
+  {
+    "p_id": "LAMP_001",
+    "stock": 35
+  },
+  {
+    "p_id": "WALL_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SUNGL_001",
+    "stock": 35
+  },
+  {
+    "p_id": "BACK_001",
+    "stock": 35
+  },
+  {
+    "p_id": "TRIM_001",
+    "stock": 35
+  },
+  {
+    "p_id": "TOOTH_001",
+    "stock": 35
+  },
+  {
+    "p_id": "SUN_001",
+    "stock": 35
+  },
+  {
+    "p_id": "PERF_001",
+    "stock": 35
+  },
+  {
+    "p_id": "FACE_001",
+    "stock": 35
+  },
+  {
+    "p_id": "WAX_001",
+    "stock": 35
+  },
+  {
+    "p_id": "LIP_001",
+    "stock": 35
+  }
+]

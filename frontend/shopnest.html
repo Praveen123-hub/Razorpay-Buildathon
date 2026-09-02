@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopNest - Online Shopping for Electronics, Apparel, Shoes & More</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sn-nav-bg: #131921;
+      --sn-nav-sub: #232f3e;
+      --sn-accent: #febd69;
+      --sn-accent-hover: #f3a847;
+      --sn-primary-btn: #ffd814;
+      --sn-primary-btn-hover: #f7ca00;
+      --sn-bg: #eaeded;
+      --sn-card-bg: #ffffff;
+      --sn-text-main: #0f1111;
+      --sn-text-muted: #565959;
+      --sn-link: #007185;
+      --sn-border: #d5d9d9;
+      --sn-in-stock: #007600;
+      --sn-out-of-stock: #b12704;
+      --sn-price: #b12704;
+      --sn-rating: #de7921;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--sn-bg);
+      color: var(--sn-text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    .header {
+      background-color: var(--sn-nav-bg);
+      color: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .header-main {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      gap: 20px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+      cursor: pointer;
+    }
+
+    .brand-logo .brand-icon {
+      color: var(--sn-accent);
+      font-size: 24px;
+    }
+
+    .brand-logo span.dot {
+      color: var(--sn-accent);
+    }
+
+    .search-container {
+      flex: 1;
+      display: flex;
+      max-width: 750px;
+    }
+
+    .search-select {
+      background: #f3f3f3;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      padding: 0 12px;
+      font-size: 13px;
+      color: #333;
+      cursor: pointer;
+      border-right: 1px solid #ddd;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .search-btn {
+      background: var(--sn-accent);
+      border: none;
+      border-radius: 0 4px 4px 0;
+      padding: 0 18px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .search-btn:hover {
+      background: var(--sn-accent-hover);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 3px;
+      border: 1px solid transparent;
+      text-decoration: none;
+      color: white;
+    }
+
+    .nav-item:hover {
+      border-color: #ffffff;
+    }
+
+    .nav-item .nav-line-1 {
+      font-size: 11px;
+      color: #cccccc;
+    }
+
+    .nav-item .nav-line-2 {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .cart-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .cart-btn:hover {
+      border-color: #ffffff;
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -2px;
+      left: 20px;
+      background: var(--sn-accent);
+      color: #000;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 10px;
+      padding: 1px 6px;
+    }
+
+    /* Subheader / Categories */
+    .header-sub {
+      background-color: var(--sn-nav-sub);
+      display: flex;
+      align-items: center;
+      padding: 6px 20px;
+      gap: 15px;
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .cat-pill {
+      color: #ffffff;
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .cat-pill:hover, .cat-pill.active {
+      border-color: #ffffff;
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Main Container */
+    .main-content {
+      max-width: 1440px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 0 20px;
+      flex: 1;
+    }
+
+    .banner {
+      background: linear-gradient(135deg, #232f3e 0%, #37475a 100%);
+      color: white;
+      border-radius: 8px;
+      padding: 24px 30px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .banner-text h1 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .banner-text p {
+      font-size: 14px;
+      color: #d5d9d9;
+    }
+
+    .banner-badge {
+      background: var(--sn-accent);
+      color: #111;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--sn-text-main);
+    }
+
+    .refresh-btn {
+      background: white;
+      border: 1px solid var(--sn-border);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--sn-text-muted);
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: #f7fafa;
+      color: var(--sn-text-main);
+    }
+
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .product-card {
+      background: var(--sn-card-bg);
+      border-radius: 8px;
+      border: 1px solid #e7e7e7;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      position: relative;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      border-color: #d5d9d9;
+    }
+
+    .product-visual {
+      background: #ffffff;
+      border-radius: 6px;
+      height: 140px;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      user-select: none;
+      overflow: hidden;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+
+    .product-img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      transition: transform 0.2s;
+    }
+
+    .product-card:hover .product-img {
+      transform: scale(1.06);
+    }
+
+    .product-category {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--sn-text-muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+      height: 16px;
+      line-height: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--sn-text-main);
+      line-height: 1.3;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 38px;
+      min-height: 38px;
+    }
+
+    .product-rating {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      color: var(--sn-rating);
+      margin-bottom: 8px;
+      height: 20px;
+    }
+
+    .rating-stars {
+      color: #ffa41c;
+      font-weight: bold;
+    }
+
+    .rating-val {
+      font-weight: 600;
+      color: var(--sn-link);
+    }
+
+    .product-desc {
+      font-size: 12px;
+      color: var(--sn-text-muted);
+      line-height: 1.4;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 34px;
+      min-height: 34px;
+      flex-grow: 0;
+    }
+
+    .product-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 6px;
+      height: 24px;
+    }
+
+    .price-symbol {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--sn-price);
+    }
+
+    .price-amount {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--sn-price);
+    }
+
+    .stock-badge {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      height: 16px;
+      line-height: 16px;
+    }
+
+    .stock-badge.in-stock {
+      color: var(--sn-in-stock);
+    }
+
+    .stock-badge.out-of-stock {
+      color: var(--sn-out-of-stock);
+    }
+
+    .card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .qty-picker {
+      display: grid;
+      grid-template-columns: 36px 1fr 36px;
+      align-items: center;
+      border: 1px solid var(--sn-border);
+      border-radius: 4px;
+      background: #f0f2f2;
+      overflow: hidden;
+      height: 36px;
+      box-sizing: border-box;
+    }
+
+    .qty-btn {
+      background: #e3e6e6;
+      border: none;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+      user-select: none;
+      box-sizing: border-box;
+      transition: background 0.1s;
+    }
+
+    .qty-btn:hover:not(:disabled) {
+      background: #d5d9d9;
+    }
+
+    .qty-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .qty-display {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      background: #ffffff;
+      color: #111;
+      border-left: 1px solid var(--sn-border);
+      border-right: 1px solid var(--sn-border);
+      box-sizing: border-box;
+    }
+
+    .add-to-cart-btn {
+      background: var(--sn-primary-btn);
+      border: 1px solid #fcd200;
+      border-radius: 20px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f1111;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(213,217,217,0.5);
+      transition: all 0.15s;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .add-to-cart-btn:hover:not(:disabled) {
+      background: var(--sn-primary-btn-hover);
+      border-color: #f2c200;
+    }
+
+    .add-to-cart-btn:disabled {
+      background: #e3e6e6;
+      border-color: #d5d9d9;
+      color: #888;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Toast alert */
+    .sn-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #131921;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 6px;
+      border-left: 4px solid #febd69;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .sn-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Modal (Details & Cart & Orders) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 8px;
+      max-width: 750px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e7e7e7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #777;
+    }
+
+    .modal-close:hover {
+      color: #000;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    /* Details View layout */
+    .details-layout {
+      display: flex;
+      gap: 24px;
+    }
+
+    @media (max-width: 600px) {
+      .details-layout {
+        flex-direction: column;
+      }
+    }
+
+    .details-visual {
+      flex: 0 0 200px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 90px;
+      border: 1px solid #e7e7e7;
+    }
+
+    .details-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .attr-group {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .attr-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--sn-text-main);
+    }
+
+    .attr-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .attr-chip {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    /* Cart Drawer / Modal */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid #e7e7e7;
+    }
+
+    .cart-item-visual {
+      font-size: 32px;
+      background: #f8f9fa;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .cart-item-info {
+      flex: 1;
+    }
+
+    .cart-item-name {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .cart-item-price {
+      color: var(--sn-price);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cart-summary {
+      margin-top: 20px;
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cart-total-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .cart-total-amount {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--sn-price);
+    }
+
+    /* Orders View */
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .order-card {
+      border: 1px solid var(--sn-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .order-card-header {
+      background: #f0f2f2;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      border-bottom: 1px solid var(--sn-border);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .order-card-body {
+      padding: 16px 18px;
+      background: white;
+    }
+
+    .order-line-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+      border-bottom: 1px dashed #eee;
+    }
+
+    .order-line-item:last-child {
+      border-bottom: none;
+    }
+
+    .badge-paid {
+      background: #e6f4ea;
+      color: #137333;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .badge-confirmed {
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--sn-nav-sub);
+      color: #dddddd;
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="header">
+    <div class="header-main">
+      <div class="brand-logo" onclick="app.showCatalog()">
+        <span>ShopNest<span class="dot">.in</span></span>
+      </div>
+
+      <div class="search-container">
+        <select class="search-select" id="searchCategory" onchange="app.filterProducts()">
+          <option value="">All Categories</option>
+        </select>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search ShopNest products..." oninput="app.filterProducts()">
+        <button class="search-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+
+      <div class="nav-actions">
+        <div class="nav-item" onclick="app.openOrdersModal()">
+          <span class="nav-line-1">Returns</span>
+          <span class="nav-line-2">& Orders</span>
+        </div>
+
+        <button class="cart-btn" onclick="app.openCartModal()">
+          Cart
+          <span class="cart-count" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Subnav -->
+    <div class="header-sub" id="categorySubnav">
+      <span class="cat-pill active" onclick="app.selectCategory('')">All Products</span>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <div class="banner" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+      <div class="banner-text" style="flex: 1; min-width: 260px;">
+        <span style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.85; display: block; margin-bottom: 4px; font-weight: 700;">SHOPNEST</span>
+        <h1 style="margin: 0; font-size: 26px; margin-bottom: 4px;">Welcome To ShopNest</h1>
+        <p style="margin: 0; font-size: 13px; color: #cbd5e1;">Official Partner Merchant Storefront</p>
+      </div>
+      <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.22); backdrop-filter: blur(8px); border-radius: 8px; padding: 12px 18px; max-width: 520px; font-size: 12.5px; color: #f1f5f9; line-height: 1.45;">
+        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #febd69; margin-bottom: 4px; font-size: 12.5px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          Reference &amp; Live Order Reflection Only
+        </div>
+        <div>
+          This portal is for <strong>reference and live verification only</strong>. Orders and cart details placed through the <strong>AI Buyer Agent</strong> will be reflected here automatically. Please use the AI Buyer Agent to search, compare, and place orders.
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2 class="section-title" id="sectionHeading">Product Catalog</h2>
+      <button class="refresh-btn" onclick="app.fetchData()">
+        Refresh Live Stock
+      </button>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="productGrid">
+      <p style="padding: 20px; color: #666;">Loading ShopNest products from backend API...</p>
+    </div>
+  </main>
+
+  <!-- Product Details Modal -->
+  <div class="modal-overlay" id="detailsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modalProdCategory">Product Details</h2>
+        <button class="modal-close" onclick="app.closeModal('detailsModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="detailsBody">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div class="modal-overlay" id="cartModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Your Shopping Cart (ShopNest)</h2>
+        <button class="modal-close" onclick="app.closeModal('cartModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="cartBody">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Modal -->
+  <div class="modal-overlay" id="ordersModal">
+    <div class="modal-box" style="max-width: 850px;">
+      <div class="modal-header">
+        <h2>ShopNest - My Orders History</h2>
+        <button class="modal-close" onclick="app.closeModal('ordersModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="ordersBody">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    ShopNest Mock Storefront &copy; 2026. Data-access layer single source of truth.
+  </footer>
+
+  <script>
+    // Self-contained ShopNest Merchant Storefront App
+    const app = {
+      merchant: 'shopnest',
+      apiBase: (window.location.origin && window.location.origin.startsWith('http')) ? '' : 'http://localhost:8000',
+      products: [],
+      inventoryMap: {},
+      cart: {}, // { p_id: { quantity, product } }
+      cardQuantities: {}, // { p_id: quantity }
+      selectedCategory: '',
+      toastTimeout: null,
+
+      showToast(msg) {
+        let toast = document.getElementById('snToast');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'snToast';
+          toast.className = 'sn-toast';
+          document.body.appendChild(toast);
+        }
+        toast.innerText = msg;
+        toast.classList.add('show');
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      },
+
+      // Dynamic Emoji Resolver based on category & name
+      getEmoji(p) {
+        const cat = (p.category || '').toLowerCase();
+        const name = (p.p_name || '').toLowerCase();
+
+        if (cat.includes('footwear') || name.includes('shoe') || name.includes('walker') || name.includes('boot')) {
+          if (name.includes('sock')) return '🧦';
+          if (name.includes('insole')) return '👟';
+          return '👟';
+        }
+        if (cat.includes('apparel') || name.includes('shirt') || name.includes('t-shirt') || name.includes('hoodie')) {
+          if (name.includes('belt')) return '👔';
+          if (name.includes('cap')) return '🧢';
+          if (name.includes('pant') || name.includes('jean') || name.includes('short')) return '👖';
+          if (name.includes('jacket')) return '🧥';
+          return '👕';
+        }
+        if (cat.includes('electronics') || name.includes('earbud') || name.includes('speaker')) {
+          if (name.includes('watch')) return '⌚';
+          if (name.includes('power') || name.includes('charger')) return '🔋';
+          if (name.includes('cable')) return '🔌';
+          if (name.includes('keyboard')) return '⌨️';
+          if (name.includes('mouse')) return '🖱️';
+          if (name.includes('stand')) return '💻';
+          return '🎧';
+        }
+        if (cat.includes('fitness') || name.includes('gym') || name.includes('yoga')) {
+          if (name.includes('bottle') || name.includes('shaker')) return '🥤';
+          if (name.includes('mat')) return '🧘';
+          if (name.includes('bag')) return '🎒';
+          if (name.includes('rope')) return '⚡';
+          return '🏋️';
+        }
+        if (cat.includes('personal care') || name.includes('trimmer') || name.includes('brush')) {
+          if (name.includes('tooth')) return '🪥';
+          if (name.includes('perfume')) return '🧴';
+          if (name.includes('sunscreen') || name.includes('cleanser')) return '🧴';
+          if (name.includes('lip')) return '💄';
+          return '🪒';
+        }
+        if (cat.includes('home') || cat.includes('lifestyle')) {
+          if (name.includes('wallet')) return '👛';
+          if (name.includes('sunglass')) return '🕶️';
+          if (name.includes('backpack')) return '🎒';
+          if (name.includes('mug')) return '☕';
+          if (name.includes('lamp')) return '💡';
+          return '🏠';
+        }
+        return '📦';
+      },
+
+      async init() {
+        await this.fetchData();
+        this.renderCategories();
+        this.pullCartFromBackend();
+        setInterval(() => this.pullCartFromBackend(), 1500);
+      },
+
+      async syncCartWithBackend() {
+        const sessionId = localStorage.getItem('agent_active_session_id');
+        if (!sessionId) return;
+        try {
+          const getRes = await fetch(`${this.apiBase}/api/session/${sessionId}/cart`);
+          if (!getRes.ok) return;
+          const masterData = await getRes.json();
+          const otherItems = (masterData.cart_contents || []).filter(item => item.merchant !== this.merchant);
+          const localItems = Object.values(this.cart).map(i => ({
+            p_id: i.product.p_id,
+            p_name: i.product.p_name,
+            merchant: this.merchant,
+            price: i.product.price,
+            rating: i.product.rating || 0.0,
+            quantity: i.quantity
+          }));
+          const combined = [...otherItems, ...localItems];
+          await fetch(`${this.apiBase}/api/session/${sessionId}/cart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_contents: combined })
+          });
+        } catch (err) {
+          console.error("Failed to sync cart to backend:", err);
+        }
+      },
+
+      async pullCartFromBackend() {
+        const sessionId = localStorage.getItem('agent_active_session_id');
+        if (!sessionId) return;
+        try {
+          const res = await fetch(`${this.apiBase}/api/session/${sessionId}/cart`);
+          if (!res.ok) return;
+          const data = await res.json();
+          const merchantItems = (data.cart_contents || []).filter(item => item.merchant === this.merchant);
+          const newCart = {};
+          merchantItems.forEach(item => {
+            const product = this.products.find(p => p.p_id === item.p_id);
+            if (product) {
+              newCart[item.p_id] = {
+                product: product,
+                quantity: item.quantity
+              };
+            }
+          });
+          const cartKeys = Object.keys(this.cart);
+          const newCartKeys = Object.keys(newCart);
+          let changed = (cartKeys.length !== newCartKeys.length);
+          if (!changed) {
+            for (let k of cartKeys) {
+              if (!newCart[k] || newCart[k].quantity !== this.cart[k].quantity) {
+                changed = true;
+                break;
+              }
+            }
+          }
+          if (changed) {
+            this.cart = newCart;
+            this.updateCartBadge();
+            this.renderProducts();
+            const cartModal = document.getElementById('cartModal');
+            if (cartModal && cartModal.classList.contains('open')) {
+              this.openCartModal();
+            }
+          }
+        } catch (err) {
+          console.error("Failed to pull cart from backend:", err);
+        }
+      },
+
+      async fetchData() {
+        try {
+          const [prodRes, invRes] = await Promise.all([
+            fetch(`${this.apiBase}/api/${this.merchant}/products`),
+            fetch(`${this.apiBase}/api/${this.merchant}/inventory`)
+          ]);
+
+          if (!prodRes.ok || !invRes.ok) {
+            throw new Error('Failed to load merchant data');
+          }
+
+          this.products = await prodRes.json();
+          const invList = await invRes.json();
+          this.inventoryMap = {};
+          invList.forEach(item => {
+            this.inventoryMap[item.p_id] = item.stock;
+          });
+
+          this.renderProducts();
+          this.updateCartBadge();
+        } catch (err) {
+          console.error('Error fetching data:', err);
+          document.getElementById('productGrid').innerHTML = `
+            <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: #b12704;">
+              <h3>Unable to connect to ShopNest backend API</h3>
+              <p style="margin-top: 8px;">Please ensure the FastAPI server is running.</p>
+            </div>
+          `;
+        }
+      },
+
+      renderCategories() {
+        const categories = [...new Set(this.products.map(p => p.category))].sort();
+        const select = document.getElementById('searchCategory');
+        const subnav = document.getElementById('categorySubnav');
+
+        select.innerHTML = '<option value="">All Categories</option>';
+        subnav.innerHTML = '<span class="cat-pill ' + (this.selectedCategory === '' ? 'active' : '') + '" onclick="app.selectCategory(\'\')">All Products</span>';
+
+        categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          select.appendChild(opt);
+
+          const pill = document.createElement('span');
+          pill.className = 'cat-pill ' + (this.selectedCategory === cat ? 'active' : '');
+          pill.textContent = cat;
+          pill.onclick = () => this.selectCategory(cat);
+          subnav.appendChild(pill);
+        });
+      },
+
+      selectCategory(cat) {
+        this.selectedCategory = cat;
+        document.getElementById('searchCategory').value = cat;
+        this.renderCategories();
+        this.renderProducts();
+      },
+
+      filterProducts() {
+        this.selectedCategory = document.getElementById('searchCategory').value;
+        this.renderProducts();
+      },
+
+      renderProducts() {
+        const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+        const grid = document.getElementById('productGrid');
+
+        // Dynamically expand products with attributes.colors into separate visual variant cards
+        const displayItems = [];
+        this.products.forEach(p => {
+          const colors = (p.attributes && Array.isArray(p.attributes.colors) && p.attributes.colors.length > 0) ? p.attributes.colors : null;
+          if (colors) {
+            colors.forEach(c => {
+              const cleanColor = String(c).replace(/\s+/g, '_');
+              const fileName = `${p.p_id}_${cleanColor}.jpg`;
+              displayItems.push({
+                ...p,
+                color: c,
+                cleanColor: cleanColor,
+                fileName: fileName,
+                variantKey: `${p.p_id}__${cleanColor}`,
+                imgSrc: `Images/${fileName}`
+              });
+            });
+          } else {
+            const fileName = `${p.p_id}.jpg`;
+            displayItems.push({
+              ...p,
+              color: null,
+              cleanColor: null,
+              fileName: fileName,
+              variantKey: p.p_id,
+              imgSrc: `Images/${fileName}`
+            });
+          }
+        });
+
+        const filtered = displayItems.filter(item => {
+          const matchesCat = !this.selectedCategory || item.category === this.selectedCategory;
+          const matchesQuery = !query || 
+            item.p_name.toLowerCase().includes(query) || 
+            item.description.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query) ||
+            (item.color && item.color.toLowerCase().includes(query));
+          return matchesCat && matchesQuery;
+        });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: #666;">No products matched your search.</div>';
+          return;
+        }
+
+        grid.innerHTML = filtered.map(item => {
+          const p_id = item.p_id;
+          const key = item.variantKey;
+          const stock = this.inventoryMap[p_id] ?? 0;
+          const inStock = stock > 0;
+          const cartItem = this.cart[key];
+
+          if (this.cardQuantities[key] === undefined) {
+            this.cardQuantities[key] = cartItem ? cartItem.quantity : 0;
+          }
+          if (inStock && this.cardQuantities[key] > stock) {
+            this.cardQuantities[key] = stock;
+          }
+          if (this.cardQuantities[key] < 0) {
+            this.cardQuantities[key] = 0;
+          }
+          const selectedQty = inStock ? this.cardQuantities[key] : 0;
+
+          const colorBadge = item.color ? `
+            <div style="display: flex; align-items: center; gap: 6px; margin: 4px 0;">
+              <span style="font-size: 11.5px; font-weight: 600; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; border: 1px solid #bae6fd;">
+                Color: ${item.color}
+              </span>
+            </div>
+          ` : '';
+
+          return `
+            <div class="product-card" onclick="app.openProductDetails('${p_id}', '${item.color || ''}')">
+              <div class="product-visual">
+                <img src="${item.imgSrc}" alt="${item.p_name}${item.color ? ' - ' + item.color : ''}" class="product-img" loading="lazy" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${item.fileName}';" />
+              </div>
+              <div class="product-category">${item.category}</div>
+              <div class="product-name" title="${item.p_name}">${item.p_name}</div>
+              ${colorBadge}
+              <div class="product-rating">
+                <span class="rating-stars">${'★'.repeat(Math.floor(item.rating))}${'☆'.repeat(5 - Math.floor(item.rating))}</span>
+                <span class="rating-val">${item.rating.toFixed(1)} / 5</span>
+              </div>
+              <div class="product-desc">${item.description}</div>
+              <div class="product-price-row">
+                <span class="price-symbol">₹</span>
+                <span class="price-amount">${item.price.toLocaleString('en-IN')}</span>
+              </div>
+              <div class="stock-badge ${inStock ? 'in-stock' : 'out-of-stock'}">
+                ${inStock ? `✓ In Stock (${stock} available)` : '✗ Out of Stock'}
+              </div>
+              <div class="card-actions" onclick="event.stopPropagation()">
+                <div class="qty-picker">
+                  <button class="qty-btn" id="btnMinus_${key}" onclick="app.adjustCardQty('${key}', -1)" ${!inStock || selectedQty <= 0 ? 'disabled' : ''}>−</button>
+                  <div class="qty-display" id="cardQty_${key}">${selectedQty}</div>
+                  <button class="qty-btn" id="btnPlus_${key}" onclick="app.adjustCardQty('${key}', 1)" ${!inStock || selectedQty >= stock ? 'disabled' : ''}>+</button>
+                </div>
+                <button class="add-to-cart-btn" id="btnAdd_${key}" onclick="app.addToCart('${key}')" ${!inStock ? 'disabled' : ''}>
+                  ${!inStock ? 'Out of Stock' : (cartItem ? 'Update in Cart' : 'Add to Cart')}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      adjustCardQty(key, delta) {
+        const p_id = key.includes('__') ? key.split('__')[0] : key;
+        const stock = this.inventoryMap[p_id] || 0;
+        if (stock <= 0) return;
+
+        let currentQty = this.cardQuantities[key];
+        if (currentQty === undefined) {
+          currentQty = this.cart[key] ? this.cart[key].quantity : 0;
+        }
+
+        let newQty = currentQty + delta;
+        if (newQty < 0) newQty = 0;
+        if (newQty > stock) newQty = stock;
+
+        this.cardQuantities[key] = newQty;
+
+        const display = document.getElementById(`cardQty_${key}`);
+        if (display) {
+          display.innerText = newQty;
+        }
+
+        const btnMinus = document.getElementById(`btnMinus_${key}`);
+        const btnPlus = document.getElementById(`btnPlus_${key}`);
+        if (btnMinus) {
+          btnMinus.disabled = (newQty <= 0);
+        }
+        if (btnPlus) {
+          btnPlus.disabled = (newQty >= stock);
+        }
+
+        if (this.cart[key]) {
+          if (newQty === 0) {
+            delete this.cart[key];
+          } else {
+            this.cart[key].quantity = newQty;
+          }
+          this.updateCartBadge();
+          const btnAdd = document.getElementById(`btnAdd_${key}`);
+          if (btnAdd) {
+            btnAdd.innerText = this.cart[key] ? 'Update in Cart' : 'Add to Cart';
+          }
+          this.syncCartWithBackend();
+        }
+      },
+
+      addToCart(key) {
+        const p_id = key.includes('__') ? key.split('__')[0] : key;
+        const color = key.includes('__') ? key.split('__')[1].replace(/_/g, ' ') : null;
+        const product = this.products.find(p => p.p_id === p_id);
+        const stock = this.inventoryMap[p_id] || 0;
+        if (!product || stock <= 0) return;
+
+        let qty = this.cardQuantities[key];
+        if (qty === undefined) {
+          const qtyEl = document.getElementById(`cardQty_${key}`);
+          qty = qtyEl ? parseInt(qtyEl.innerText) : 0;
+        }
+
+        if (qty <= 0) {
+          this.showToast("Please select a quantity first.");
+          return;
+        }
+
+        const finalQty = Math.max(1, Math.min(qty, stock));
+        this.cardQuantities[key] = finalQty;
+
+        this.cart[key] = {
+          product: product,
+          quantity: finalQty,
+          color: color,
+          key: key
+        };
+
+        this.updateCartBadge();
+        this.renderProducts();
+        this.syncCartWithBackend();
+        this.showToast(`Added ${finalQty} ${product.p_name}${color ? ' (' + color + ')' : ''} to cart.`);
+      },
+
+      updateCartBadge() {
+        const count = Object.values(this.cart).reduce((acc, item) => acc + item.quantity, 0);
+        document.getElementById('cartBadge').innerText = count;
+      },
+
+      openProductDetails(p_id, color = '') {
+        const p = this.products.find(item => item.p_id === p_id);
+        if (!p) return;
+        const stock = this.inventoryMap[p_id] || 0;
+        const inStock = stock > 0;
+        const cleanColor = color ? color.replace(/\s+/g, '_') : null;
+        const fileName = cleanColor ? `${p.p_id}_${cleanColor}.jpg` : `${p.p_id}.jpg`;
+        const key = cleanColor ? `${p.p_id}__${cleanColor}` : p.p_id;
+        const cartItem = this.cart[key];
+        const qty = cartItem ? cartItem.quantity : 1;
+        const imgSrc = `Images/${fileName}`;
+
+        let attrHtml = '';
+        if (p.attributes && Object.keys(p.attributes).length > 0) {
+          attrHtml = `
+            <div class="attr-group">
+              <div class="attr-title">Product Specifications:</div>
+              <div class="attr-chips">
+                ${Object.entries(p.attributes).map(([k, v]) => `
+                  <span class="attr-chip"><strong>${k}:</strong> ${Array.isArray(v) ? v.join(', ') : v}</span>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        const colorBadgeHtml = color ? `
+          <div style="margin: 8px 0;">
+            <span style="font-size: 13px; font-weight: 700; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 4px; border: 1px solid #bae6fd;">
+              Selected Color: ${color}
+            </span>
+          </div>
+        ` : '';
+
+        document.getElementById('modalProdCategory').innerText = `${p.category} — ${p.p_id}`;
+        document.getElementById('detailsBody').innerHTML = `
+          <div class="details-layout">
+            <div class="details-visual" style="display:flex; align-items:center; justify-content:center; padding:12px; background:#ffffff; border:1px solid #eee; border-radius:6px; min-height: 220px;">
+              <img src="${imgSrc}" alt="${p.p_name}" style="max-width:100%; max-height:220px; object-fit:contain; border-radius:6px;" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${fileName}';" />
+            </div>
+            <div class="details-info">
+              <h2 style="font-size: 20px; font-weight: 800;">${p.p_name}</h2>
+              ${colorBadgeHtml}
+              <div class="product-rating">
+                <span class="rating-stars">${'★'.repeat(Math.floor(p.rating))}${'☆'.repeat(5 - Math.floor(p.rating))}</span>
+                <span class="rating-val">${p.rating.toFixed(1)} / 5.0 (Verified Merchant Rating)</span>
+              </div>
+              <div class="product-price-row">
+                <span class="price-symbol">₹</span>
+                <span class="price-amount" style="font-size: 26px;">${p.price.toLocaleString('en-IN')}</span>
+              </div>
+              <div class="stock-badge ${inStock ? 'in-stock' : 'out-of-stock'}" style="font-size: 14px;">
+                ${inStock ? `✓ Currently In Stock (${stock} units available)` : '✗ Currently Out of Stock'}
+              </div>
+              <p style="font-size: 14px; line-height: 1.5; color: #444;">${p.description}</p>
+              ${attrHtml}
+              <div style="margin-top: 12px; display: flex; gap: 12px; align-items: center;">
+                <button class="add-to-cart-btn" style="flex: 1; padding: 12px;" onclick="app.addToCart('${key}'); app.closeModal('detailsModal');" ${!inStock ? 'disabled' : ''}>
+                  ${!inStock ? 'Unavailable' : 'Add to Cart'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('detailsModal').classList.add('open');
+      },
+
+      openCartModal() {
+        const items = Object.values(this.cart);
+        const body = document.getElementById('cartBody');
+
+        if (items.length === 0) {
+          body.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+              <div style="font-size: 54px; margin-bottom: 12px;">🛒</div>
+              <h3>Your ShopNest cart is empty</h3>
+              <p style="color: #666; margin-top: 6px;">Add products from the catalog to build your order.</p>
+            </div>
+          `;
+        } else {
+          let total = 0;
+          const itemsHtml = items.map(item => {
+            const p = item.product;
+            const key = item.key || p.p_id;
+            const stock = this.inventoryMap[p.p_id] || 0;
+            const subtotal = p.price * item.quantity;
+            total += subtotal;
+            const cleanColor = item.color ? item.color.replace(/\s+/g, '_') : null;
+            const fileName = cleanColor ? `${p.p_id}_${cleanColor}.jpg` : `${p.p_id}.jpg`;
+            const imgSrc = `Images/${fileName}`;
+            const colorTag = item.color ? `<span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px;">Color: ${item.color}</span>` : '';
+
+            return `
+              <div class="cart-item">
+                <div class="cart-item-visual" style="display:flex; align-items:center; justify-content:center;">
+                  <img src="${imgSrc}" alt="${p.p_name}" style="width:52px; height:52px; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #eee; padding:2px;" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${fileName}';" />
+                </div>
+                <div class="cart-item-info">
+                  <div class="cart-item-name">${p.p_name} ${colorTag}</div>
+                  <div class="cart-item-price">₹${p.price.toLocaleString('en-IN')} × ${item.quantity} = ₹${subtotal.toLocaleString('en-IN')}</div>
+                  <div style="font-size: 11px; color: #666; margin-top: 2px;">Stock: ${stock} units</div>
+                </div>
+                <div class="cart-item-actions">
+                  <div class="qty-picker">
+                    <button class="qty-btn" onclick="app.updateCartItemQty('${key}', -1)">−</button>
+                    <div class="qty-display" style="width: 36px;">${item.quantity}</div>
+                    <button class="qty-btn" onclick="app.updateCartItemQty('${key}', 1)" ${item.quantity >= stock ? 'disabled' : ''}>+</button>
+                  </div>
+                  <button style="background: none; border: none; color: #b12704; cursor: pointer; font-size: 13px; text-decoration: underline;" onclick="app.removeCartItem('${key}')">Remove</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          body.innerHTML = `
+            <div>
+              ${itemsHtml}
+              <div class="cart-summary">
+                <div class="cart-total-title">Subtotal (${items.reduce((a, b) => a + b.quantity, 0)} items):</div>
+                <div class="cart-total-amount">₹${total.toLocaleString('en-IN')}</div>
+              </div>
+              <div style="margin-top: 18px; display: flex; justify-content: flex-end;">
+                <button class="add-to-cart-btn" id="btnShopnestCheckout" style="padding: 12px 28px; font-size: 15px; font-weight: 700; width: 100%; max-width: 320px; background: var(--sn-accent); color: #111; border: 1px solid #a88734; border-radius: 8px; cursor: pointer;" onclick="app.checkoutCart()">
+                  Proceed to Checkout / Place Order
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById('cartModal').classList.add('open');
+      },
+
+      async checkoutCart() {
+        const items = Object.values(this.cart);
+        if (items.length === 0) {
+          this.showToast("Your cart is empty.");
+          return;
+        }
+
+        const btn = document.getElementById('btnShopnestCheckout');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = "Processing Order...";
+        }
+
+        const products = items.map(i => ({
+          p_id: i.product.p_id,
+          quantity: i.quantity,
+          unit_price: i.product.price,
+          color: i.color || null
+        }));
+
+        const total_amount = products.reduce((sum, i) => sum + (i.quantity * i.unit_price), 0);
+
+        try {
+          const res = await fetch(`${this.apiBase}/api/${this.merchant}/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              products: products,
+              total_amount: total_amount,
+              payment_status: 'paid',
+              order_status: 'confirmed'
+            })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || 'Backend order placement failed');
+          }
+
+          const newOrder = await res.json();
+
+          // Clear cart on successful purchase
+          this.cart = {};
+          this.cardQuantities = {};
+          this.updateCartBadge();
+          await this.syncCartWithBackend();
+          await this.fetchData(); // Refresh live inventory and catalog
+
+          this.closeModal('cartModal');
+          this.showToast(`Order #${newOrder.order_id} placed successfully!`);
+          this.openOrdersModal(); // Show newly created order in My Orders
+        } catch (err) {
+          console.error('Purchase error:', err);
+          this.showToast(`Purchase failed: ${err.message}`);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Proceed to Checkout / Place Order";
+          }
+        }
+      },
+
+      updateCartItemQty(key, delta) {
+        if (!this.cart[key]) return;
+        const p_id = key.includes('__') ? key.split('__')[0] : key;
+        const stock = this.inventoryMap[p_id] || 0;
+        let newQty = this.cart[key].quantity + delta;
+
+        if (newQty <= 0) {
+          delete this.cart[key];
+        } else {
+          this.cart[key].quantity = Math.min(newQty, stock);
+        }
+
+        this.updateCartBadge();
+        this.renderProducts();
+        this.syncCartWithBackend();
+        this.openCartModal();
+      },
+
+      removeCartItem(key) {
+        delete this.cart[key];
+        this.updateCartBadge();
+        this.renderProducts();
+        this.syncCartWithBackend();
+        this.openCartModal();
+      },
+
+      async openOrdersModal() {
+        const body = document.getElementById('ordersBody');
+        body.innerHTML = '<p style="padding: 20px; color: #666;">Loading your ShopNest orders...</p>';
+        document.getElementById('ordersModal').classList.add('open');
+
+        try {
+          const res = await fetch(`${this.apiBase}/api/${this.merchant}/orders?user_only=true`);
+          if (!res.ok) throw new Error('Failed to load orders');
+          const orders = await res.json();
+
+          if (!orders || orders.length === 0) {
+            body.innerHTML = `
+              <div style="text-align: center; padding: 48px 20px;">
+                <div style="font-size: 52px; margin-bottom: 12px;">📦</div>
+                <h3 style="color: #111; margin-bottom: 8px;">No orders yet</h3>
+                <p style="color: #666; font-size: 14px; max-width: 440px; margin: 0 auto;">You have not placed any orders on ShopNest yet. Once Agent 1 completes a purchase, your confirmed order details will appear here.</p>
+              </div>
+            `;
+            return;
+          }
+
+          // Sort latest orders first
+          const sortedOrders = [...orders].reverse();
+
+          body.innerHTML = `
+            <div class="orders-list">
+              ${sortedOrders.map(o => `
+                <div class="order-card">
+                  <div class="order-card-header">
+                    <div><strong>Order ID:</strong> ${o.order_id}</div>
+                    <div><strong>Date:</strong> ${new Date(o.created_at).toLocaleString('en-IN')}</div>
+                    <div><strong>Total:</strong> ₹${o.total_amount.toLocaleString('en-IN')}</div>
+                    <div>
+                      <span class="badge-paid">${o.payment_status}</span>
+                      <span class="badge-confirmed">${o.order_status}</span>
+                    </div>
+                  </div>
+                  <div class="order-card-body">
+                    ${o.products.map(item => {
+                      const prod = this.products.find(p => p.p_id === item.p_id);
+                      const name = prod ? prod.p_name : item.p_id;
+                      const itemColor = item.color || (item.attributes && item.attributes.color);
+                      const itemSize = item.size || (item.attributes && item.attributes.size);
+                      const colorBadge = itemColor ? `<span style="font-size: 11.5px; color: #4338ca; background: #eef2ff; padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: 600;">Color: ${itemColor}</span>` : '';
+                      const sizeBadge = itemSize ? `<span style="font-size: 11.5px; color: #374151; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Size: ${itemSize}</span>` : '';
+                      const cleanColor = itemColor ? itemColor.replace(/\s+/g, '_') : null;
+                      const fileName = cleanColor ? `${item.p_id}_${cleanColor}.jpg` : `${item.p_id}.jpg`;
+                      const imgSrc = `Images/${fileName}`;
+                      return `
+                        <div class="order-line-item" style="display:flex; align-items:center; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                          <div style="display:flex; align-items:center;">
+                            <img src="${imgSrc}" alt="${name}" style="width:48px; height:48px; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #eee; margin-right:12px; padding:2px;" onerror="this.onerror=null; this.src='${this.apiBase ? this.apiBase + '/' : ''}images/${fileName}';" />
+                            <div>
+                              <div><strong>${name}</strong></div>
+                              <div style="font-size: 12px; color: #666; margin-top: 3px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                                <span style="margin-right: 6px;">ID: ${item.p_id}</span>
+                                ${colorBadge}
+                                ${sizeBadge}
+                              </div>
+                            </div>
+                          </div>
+                          <div>${item.quantity} × ₹${item.unit_price.toLocaleString('en-IN')} = <strong>₹${(item.quantity * item.unit_price).toLocaleString('en-IN')}</strong></div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } catch (err) {
+          body.innerHTML = `<p style="color: #b12704; padding: 20px;">Error loading orders: ${err.message}</p>`;
+        }
+      },
+
+      closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+      },
+
+      showCatalog() {
+        this.selectCategory('');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    // Initialize application on page load
+    document.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+</body>
+</html>

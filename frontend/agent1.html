@@ -1,0 +1,4190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Buyer Agent - Your Personal Shopping Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #f9fafb;
+      --bg-secondary: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --accent-color: #2563eb;
+      --accent-color-hover: #1d4ed8;
+      --border-color: #e5e7eb;
+      --chat-bubble-user: #3b82f6;
+      --chat-bubble-agent: #f3f4f6;
+      --sn-badge-bg: #febd69;
+      --cw-badge-bg: #2874f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header Styling */
+    .header {
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      height: 64px;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-title .bot-icon {
+      color: var(--accent-color);
+      font-size: 18px;
+    }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-secondary);
+      color: var(--text-main);
+    }
+
+    .btn:hover {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+    }
+
+    .btn-filled {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #ffffff;
+    }
+
+    .btn-filled:hover {
+      background-color: var(--accent-color-hover);
+      border-color: var(--accent-color-hover);
+    }
+
+    .btn-important {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .btn-important:hover {
+      background-color: var(--accent-color-hover);
+      border-color: var(--accent-color-hover);
+    }
+
+    /* Main Container Split */
+    .main-container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 64px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Chat Area Layout */
+    .chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      position: relative;
+      background-color: var(--bg-secondary);
+    }
+
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .chat-container {
+      max-width: 768px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Welcome / Suggestions State */
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px 16px;
+      margin: auto 0;
+    }
+
+    .welcome-logo {
+      font-size: 48px;
+      margin-bottom: 16px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .welcome-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 440px;
+    }
+
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    @media (min-width: 600px) {
+      .suggestions-grid {
+        grid-template-columns: 1fr 1fr;
+        max-width: 600px;
+      }
+
+      .suggestions-grid .suggestion-card:last-child {
+        grid-column: span 2;
+      }
+    }
+
+    .suggestion-card {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .suggestion-card:hover {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      transform: translateY(-1px);
+    }
+
+    .suggestion-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Center Guide Banner on Welcome Screen */
+    .guide-banner-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 20px;
+      padding: 14px 20px;
+      background: #ffffff;
+      border: 1.5px solid #2563eb;
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--text-main);
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      max-width: 480px;
+      text-align: left;
+    }
+
+    .guide-banner-card:hover {
+      background-color: #eff6ff;
+      border-color: #1d4ed8;
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.16);
+      transform: translateY(-2px);
+    }
+
+    .guide-banner-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid #bfdbfe;
+    }
+
+    .guide-banner-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .guide-banner-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #1d4ed8;
+    }
+
+    .guide-banner-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* Message Bubbles */
+    .message-row {
+      display: flex;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .message-row.agent {
+      justify-content: flex-start;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      background-color: #e5e7eb;
+    }
+
+    .avatar.agent {
+      background-color: #dbeafe;
+      color: var(--accent-color);
+    }
+
+    .avatar.user {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+
+    .message-bubble {
+      max-width: 80%;
+      padding: 12px 16px;
+      font-size: 14.5px;
+      line-height: 1.5;
+      border-radius: 18px;
+      word-wrap: break-word;
+    }
+
+    .message-row.user .message-bubble {
+      background-color: var(--chat-bubble-user);
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message-row.agent .message-bubble {
+      background-color: var(--chat-bubble-agent);
+      color: var(--text-main);
+      border-bottom-left-radius: 4px;
+    }
+
+    /* Markdown Formatting inside Bubbles */
+    .message-bubble strong {
+      font-weight: 700;
+    }
+
+    .message-bubble code {
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.06);
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 90%;
+    }
+
+    .message-bubble li {
+      margin-left: 18px;
+      margin-top: 4px;
+    }
+
+    /* Product Card In-Chat */
+    .product-card {
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .product-card-top {
+      display: flex;
+      gap: 14px;
+    }
+
+    .product-card-img-container {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      border: 1px solid #f3f4f6;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      flex-shrink: 0;
+    }
+
+    .product-card-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .product-card-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .merchant-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2.5px 7px;
+      border-radius: 4px;
+      display: inline-block;
+      align-self: flex-start;
+      margin-bottom: 5px;
+      color: #ffffff;
+    }
+
+    .merchant-badge.badge-sn {
+      background-color: var(--sn-badge-bg);
+      color: #111111;
+    }
+
+    .merchant-badge.badge-cw {
+      background-color: var(--cw-badge-bg);
+    }
+
+    .product-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 3px;
+      line-height: 1.3;
+    }
+
+    .product-rating-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .rating-stars-color {
+      color: #f59e0b;
+      /* Amber */
+    }
+
+    .product-price-display {
+      font-size: 16px;
+      font-weight: 700;
+      color: #dc2626;
+      /* red */
+      margin-bottom: 2px;
+    }
+
+    .stock-display-status {
+      font-size: 11px;
+      font-weight: 600;
+      color: #059669;
+      /* green */
+    }
+
+    /* Agent 2 Recommendation In-Chat */
+    .recommendation-card {
+      border: 1px solid var(--border-color);
+      background-color: #faf5ff;
+      /* Light purple */
+      border-radius: 12px;
+      margin-top: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .recommendation-header {
+      background-color: #f3e8ff;
+      /* Purple header */
+      padding: 6px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #7e22ce;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .recommendation-body {
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Interactive Action Buttons In-Chat */
+    .chat-actions-container {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chat-action-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 20px;
+      border: 1px solid var(--accent-color);
+      background-color: var(--bg-secondary);
+      color: var(--accent-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chat-action-btn:hover {
+      background-color: var(--accent-color);
+      color: #ffffff;
+    }
+
+    /* Searching / Processing Indicator */
+    .searching-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: var(--chat-bubble-agent);
+      padding: 12px 18px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      align-self: flex-start;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .searching-icon-pulse {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--text-muted);
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Message Input Box & Composer */
+    .input-wrapper {
+      padding: 14px 24px;
+      background-color: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .composer-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    /* Profile Trigger Control (Aligned to Left Margin / Logo) */
+    .profile-trigger-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 14px 5px 6px;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      text-align: left;
+      outline: none;
+      user-select: none;
+      height: 44px;
+      min-width: 110px;
+    }
+
+    .profile-trigger-btn:hover {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-avatar-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #dbeafe;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .profile-trigger-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .profile-trigger-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .profile-trigger-label {
+      font-size: 10.5px;
+      color: var(--text-muted);
+    }
+
+    .input-container {
+      max-width: 768px;
+      width: 100%;
+      margin: 0 auto;
+      position: relative;
+      display: flex;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 6px 12px;
+      align-items: center;
+      transition: border-color 0.2s;
+    }
+
+    .composer-right-spacer {
+      width: 110px;
+      flex-shrink: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .input-container:focus-within {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+
+    .chat-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px 12px;
+      font-size: 14.5px;
+      resize: none;
+      outline: none;
+      max-height: 120px;
+      height: 38px;
+      color: var(--text-main);
+    }
+
+    .send-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background-color: var(--accent-color-hover);
+    }
+
+    .send-btn:disabled {
+      background-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    /* Side Cart Panel Drawer (Desktop) */
+    .cart-sidebar {
+      width: 320px;
+      background-color: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      z-index: 5;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .cart-sidebar-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .cart-sidebar-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cart-sidebar-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .cart-empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      margin: auto 0;
+      padding: 20px;
+    }
+
+    .sidebar-cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    .sidebar-cart-item-info {
+      flex: 1;
+      padding-right: 8px;
+    }
+
+    .sidebar-cart-item-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.3;
+      margin-bottom: 2px;
+    }
+
+    .sidebar-cart-item-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sidebar-cart-item-price {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: right;
+    }
+
+    .cart-sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-primary);
+    }
+
+    .cart-subtotal-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .cart-subtotal-val {
+      font-weight: 700;
+      color: #dc2626;
+    }
+
+    /* Modal Overlay (Generic) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(15, 23, 42, 0.6);
+      /* Slate backdrop */
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 28px 16px;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background-color: var(--bg-secondary);
+      border-radius: 16px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform 0.25s ease;
+    }
+
+    .modal-overlay.open .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-body {
+      padding: 24px;
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      background-color: var(--bg-primary);
+    }
+
+    /* Profile Modal Box & Components */
+    .profile-modal-box {
+      max-width: 620px;
+      width: 95%;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      background-color: var(--bg-secondary);
+    }
+
+    .profile-modal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .profile-modal-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: #dbeafe;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    /* Profile Tabs Bar */
+    .profile-tabs-bar {
+      display: flex;
+      background-color: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 16px;
+      flex-shrink: 0;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .profile-tab-btn {
+      padding: 12px 16px;
+      border: none;
+      background: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .profile-tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .profile-tab-btn.active {
+      color: var(--accent-color);
+      border-bottom-color: var(--accent-color);
+    }
+
+    .profile-modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .profile-pane {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeInProfile 0.2s ease;
+    }
+
+    .profile-pane.active {
+      display: flex;
+    }
+
+    @keyframes fadeInProfile {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Profile Info Card */
+    .profile-info-card {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .profile-hero {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .profile-hero-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background-color: #dbeafe;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      border: 2px solid #bfdbfe;
+    }
+
+    .profile-hero-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .profile-hero-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #059669;
+      background-color: #ecfdf5;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 2px;
+    }
+
+    .profile-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+    }
+
+    .profile-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .profile-meta-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .profile-meta-val {
+      font-size: 13.5px;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .profile-logout-btn {
+      align-self: flex-start;
+      margin-top: 4px;
+      padding: 8px 18px;
+      background-color: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #e11d48;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .profile-logout-btn:hover {
+      background-color: #ffe4e6;
+      border-color: #fda4af;
+    }
+
+    /* Delivery Address Styles in Modal */
+    .profile-address-card {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .profile-address-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .profile-address-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-color);
+      background-color: #eff6ff;
+      padding: 2px 8px;
+      border-radius: 8px;
+      text-transform: uppercase;
+    }
+
+    .profile-address-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .profile-address-phone {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .profile-address-line {
+      font-size: 13.5px;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    .profile-address-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    /* Address Edit Form in Modal */
+    .profile-address-form {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .profile-address-form.active {
+      display: flex;
+    }
+
+    .profile-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .profile-form-full {
+      grid-column: span 2;
+    }
+
+    .profile-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .profile-form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .profile-form-input, .profile-form-select {
+      height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+      background-color: var(--bg-secondary);
+      color: var(--text-main);
+      transition: border-color 0.15s ease;
+    }
+
+    .profile-form-input:focus, .profile-form-select:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+    }
+
+    /* Order History Styles */
+    .orders-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .orders-count-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .orders-list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .order-card {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .order-card-header {
+      padding: 12px 16px;
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .order-id-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .order-id-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .order-date-text {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .order-summary-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .order-price-badge {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .order-status-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+
+    .order-status-pill.confirmed {
+      background-color: #ecfdf5;
+      color: #059669;
+    }
+
+    .order-status-pill.delivered {
+      background-color: #eff6ff;
+      color: #2563eb;
+    }
+
+    .order-card-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .order-item-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .order-item-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background-color: #ffffff;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .order-item-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .order-item-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .order-item-meta {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .order-shipping-summary {
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border-color);
+      padding-top: 8px;
+      margin-top: 2px;
+    }
+
+    .order-empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .order-empty-icon {
+      font-size: 36px;
+      margin-bottom: 4px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .input-wrapper {
+        padding: 12px 14px;
+      }
+      .composer-container {
+        gap: 8px;
+      }
+      .composer-right-spacer {
+        display: none;
+      }
+      .profile-trigger-btn {
+        min-width: auto;
+      }
+      .cart-sidebar {
+        position: fixed;
+        right: -320px;
+        top: 64px;
+        height: calc(100vh - 64px);
+        box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .cart-sidebar.open {
+        right: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .profile-trigger-name, .profile-trigger-label {
+        display: none;
+      }
+      .profile-trigger-btn {
+        padding: 5px;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        justify-content: center;
+        min-width: 44px;
+      }
+      .profile-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .profile-form-full {
+        grid-column: span 1;
+      }
+      .profile-meta-grid {
+        grid-template-columns: 1fr;
+      }
+      .important-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .important-store-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+  <!-- jsPDF CDN for client-side purchase audit PDF downloads -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="header">
+    <div class="header-left">
+      <h1 class="header-title">
+        <img class="bot-logo-img" src="Logo.jpeg"
+          style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="Logo" /> AI Buyer Agent
+      </h1>
+      <span class="header-subtitle">Your conversational shopping assistant</span>
+    </div>
+
+    <div class="header-right">
+      <button class="btn btn-important" id="btnImportantNotice" onclick="openImportantModal()" title="View supported MVP product list">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>Important
+      </button>
+      <button class="btn btn-filled" id="btnNewChat" onclick="startNewChat()">New Chat</button>
+      <button class="btn btn-filled" id="btnViewAudit" onclick="openAuditViewer()">View Audit</button>
+      <button class="btn btn-filled" id="btnDownloadAudit" onclick="triggerAuditDownload()">Download Audit</button>
+      <button class="btn" id="btnMobileCart" onclick="toggleCartDrawer()" style="display: none;">Cart (<span
+          id="cartBadgeMobile">0</span>)</button>
+    </div>
+  </header>
+
+  <!-- Main Split Layout -->
+  <div class="main-container">
+
+    <!-- Left/Center Chat Thread -->
+    <div class="chat-wrapper">
+      <div class="chat-area" id="chatArea">
+        <div class="chat-container" id="chatContainer">
+
+          <!-- Welcome Screen (Initial Empty State) -->
+          <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-logo">
+              <img src="Logo.jpeg" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;"
+                alt="Logo" />
+            </div>
+            <h2 class="welcome-title">AI Buyer Agent</h2>
+            <p class="welcome-subtitle">What product can I help you search, compare, and buy today? Tell me what you need!</p>
+
+            <a href="guide.html" target="_blank" class="guide-banner-card" id="btnOpenSystemGuide">
+              <div class="guide-banner-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+              </div>
+              <div class="guide-banner-text">
+                <span class="guide-banner-title">Want to know how this works?</span>
+                <span class="guide-banner-sub">Explore our full architecture, multi-agent logic, & trust guardrails →</span>
+              </div>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="input-wrapper">
+        <div class="composer-container">
+          <button class="profile-trigger-btn" id="btnProfileTrigger" onclick="openProfileModal()" aria-label="Open User Profile" title="Open User Profile">
+            <div class="profile-avatar-badge">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="profile-trigger-info">
+              <span class="profile-trigger-name" id="profileTriggerName">Praveen</span>
+              <span class="profile-trigger-label">Profile</span>
+            </div>
+          </button>
+
+          <div class="input-container">
+            <textarea class="chat-input" id="chatInput" rows="1" placeholder="Message AI Buyer Agent..."
+              onkeydown="handleInputKey(event)" oninput="autoResizeInput()"></textarea>
+            <button class="send-btn" id="btnSend" onclick="sendMessage()" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </button>
+          </div>
+
+          <div class="composer-right-spacer" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-sidebar" id="cartSidebar">
+      <div class="cart-sidebar-header">
+        <h3 class="cart-sidebar-title">Current Cart</h3>
+        <button class="btn" onclick="toggleCartDrawer()" id="cartCloseBtn"
+          style="display: none; padding: 4px 10px;">Close</button>
+      </div>
+      <div class="cart-sidebar-items" id="cartItemsList">
+        <div class="cart-empty-state">Your shopping cart is currently empty. Concluding purchase confirmation adds items
+          here.</div>
+      </div>
+      <div class="cart-sidebar-footer">
+        <div class="cart-subtotal-row">
+          <span>Subtotal:</span>
+          <span class="cart-subtotal-val" id="cartSubtotal">₹0</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="profileModal" onclick="handleProfileBackdropClick(event)">
+    <div class="modal-box profile-modal-box" onclick="event.stopPropagation()">
+      <div class="profile-modal-header">
+        <div class="profile-modal-title-group">
+          <div class="profile-modal-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-header-title">User Account</h3>
+            <span style="font-size: 11.5px; color: var(--text-muted);">Manage profile, delivery address & orders</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeProfileModal()" aria-label="Close Profile">&times;</button>
+      </div>
+
+      <div class="profile-tabs-bar" role="tablist">
+        <button type="button" class="profile-tab-btn active" id="tabProfileInfo" onclick="switchProfileTab('info')">
+          Profile
+        </button>
+        <button type="button" class="profile-tab-btn" id="tabProfileAddress" onclick="switchProfileTab('address')">
+          Delivery Address
+        </button>
+        <button type="button" class="profile-tab-btn" id="tabProfileOrders" onclick="switchProfileTab('orders')">
+          My Orders
+        </button>
+      </div>
+
+      <div class="profile-modal-body">
+
+        <div class="profile-pane active" id="paneProfileInfo">
+          <div class="profile-info-card">
+            <div class="profile-hero">
+              <div class="profile-hero-avatar">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div>
+                <div class="profile-hero-name" id="profileDisplayName">Praveen</div>
+                <span class="profile-hero-badge">Active Verified Buyer</span>
+              </div>
+            </div>
+
+            <div class="profile-meta-grid">
+              <div class="profile-meta-item">
+                <span class="profile-meta-label">Email Address</span>
+                <span class="profile-meta-val" id="profileDisplayEmail">user@example.com</span>
+              </div>
+              <div class="profile-meta-item">
+                <span class="profile-meta-label">Member Since</span>
+                <span class="profile-meta-val" id="profileMemberSince">September 2026</span>
+              </div>
+              <div class="profile-meta-item">
+                <span class="profile-meta-label">Default Currency</span>
+                <span class="profile-meta-val">INR (₹)</span>
+              </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <button type="button" class="profile-logout-btn" onclick="handleProfileLogout()">
+                Logout
+              </button>
+              <span id="logoutStatusMsg" style="font-size: 12px; color: var(--text-muted);"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-pane" id="paneProfileAddress">
+          <div class="profile-address-card" id="profileAddressDisplay">
+            <div class="profile-address-header">
+              <span class="profile-address-tag">Default Shipping Address</span>
+              <button type="button" class="btn" style="padding: 4px 12px; font-size: 12px;" onclick="editProfileAddress()">
+                Edit Address
+              </button>
+            </div>
+            <div class="profile-address-name" id="padRecipient">Praveen Kumar</div>
+            <div class="profile-address-phone" id="padPhone">Phone: +91 9876543210</div>
+            <div class="profile-address-line" id="padLine1">12 ABC Street</div>
+            <div class="profile-address-line" id="padLine2" style="color: var(--text-muted);">Near Promenade</div>
+            <div class="profile-address-line" id="padCityPin">Puducherry, Puducherry - 605001</div>
+            <div class="profile-address-line" id="padCountry">India</div>
+          </div>
+
+          <form class="profile-address-form" id="profileAddressForm" onsubmit="saveProfileAddress(event)">
+            <div class="profile-form-grid">
+              <div class="profile-form-group profile-form-full">
+                <label class="profile-form-label" for="paInputRecipient">Recipient Name</label>
+                <input type="text" id="paInputRecipient" class="profile-form-input" required />
+              </div>
+              <div class="profile-form-group profile-form-full">
+                <label class="profile-form-label" for="paInputPhone">Phone Number</label>
+                <input type="tel" id="paInputPhone" class="profile-form-input" required />
+              </div>
+              <div class="profile-form-group profile-form-full">
+                <label class="profile-form-label" for="paInputLine1">Address Line 1</label>
+                <input type="text" id="paInputLine1" class="profile-form-input" required />
+              </div>
+              <div class="profile-form-group profile-form-full">
+                <label class="profile-form-label" for="paInputLine2">Address Line 2 (Optional)</label>
+                <input type="text" id="paInputLine2" class="profile-form-input" />
+              </div>
+              <div class="profile-form-group">
+                <label class="profile-form-label" for="paInputCity">City</label>
+                <input type="text" id="paInputCity" class="profile-form-input" required />
+              </div>
+              <div class="profile-form-group">
+                <label class="profile-form-label" for="paInputState">State</label>
+                <input type="text" id="paInputState" class="profile-form-input" required />
+              </div>
+              <div class="profile-form-group">
+                <label class="profile-form-label" for="paInputPincode">Pincode</label>
+                <input type="text" id="paInputPincode" class="profile-form-input" required maxlength="6" />
+              </div>
+              <div class="profile-form-group">
+                <label class="profile-form-label" for="paInputCountry">Country</label>
+                <select id="paInputCountry" class="profile-form-select" required>
+                  <option value="India">India</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Australia">Australia</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="profile-address-actions">
+              <button type="submit" class="btn btn-filled" id="btnSaveProfileAddress" style="padding: 8px 18px;">
+                Save Address
+              </button>
+              <button type="button" class="btn" style="padding: 8px 18px;" onclick="cancelEditProfileAddress()">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="profile-pane" id="paneProfileOrders">
+          <div class="orders-toolbar">
+            <span class="orders-count-text" id="ordersCountHeading">Your Order History</span>
+            <button type="button" class="btn" style="padding: 3px 10px; font-size: 11.5px;" onclick="loadProfileOrders()">
+              Refresh Orders
+            </button>
+          </div>
+
+          <div class="orders-list-container" id="ordersListContainer">
+            <div class="order-card" id="orderCard1">
+              <div class="order-card-header" onclick="toggleOrderDetails('orderCard1')">
+                <div class="order-id-group">
+                  <span class="order-id-title">Order #ORD-1001</span>
+                  <span class="order-date-text">Placed on 01 Sep 2026 &bull; Merchant: ShopNest</span>
+                </div>
+                <div class="order-summary-right">
+                  <span class="order-price-badge">₹4,950</span>
+                  <span class="order-status-pill confirmed">Confirmed</span>
+                </div>
+              </div>
+              <div class="order-card-body">
+                <div class="order-item-row">
+                  <div class="order-item-img">Item</div>
+                  <div class="order-item-details">
+                    <span class="order-item-name">Nike Air Zoom Pegasus 40</span>
+                    <span class="order-item-meta">Color: Obsidian / Royal &bull; Size: 9 &bull; Qty: 1</span>
+                    <span class="order-item-meta" style="font-weight: 600; color: var(--text-main);">Price: ₹4,950</span>
+                  </div>
+                </div>
+                <div class="order-shipping-summary">
+                  <strong>Delivery Address:</strong> 12 ABC Street, Near Promenade, Puducherry - 605001, India
+                </div>
+              </div>
+            </div>
+
+            <div class="order-card" id="orderCard2">
+              <div class="order-card-header" onclick="toggleOrderDetails('orderCard2')">
+                <div class="order-id-group">
+                  <span class="order-id-title">Order #ORD-1002</span>
+                  <span class="order-date-text">Placed on 28 Aug 2026 &bull; Merchant: CartWave</span>
+                </div>
+                <div class="order-summary-right">
+                  <span class="order-price-badge">₹2,499</span>
+                  <span class="order-status-pill delivered">Delivered</span>
+                </div>
+              </div>
+              <div class="order-card-body">
+                <div class="order-item-row">
+                  <div class="order-item-img">Item</div>
+                  <div class="order-item-details">
+                    <span class="order-item-name">Sony WH-CH520 Wireless Headphones</span>
+                    <span class="order-item-meta">Color: Blue &bull; Qty: 1</span>
+                    <span class="order-item-meta" style="font-weight: 600; color: var(--text-main);">Price: ₹2,499</span>
+                  </div>
+                </div>
+                <div class="order-shipping-summary">
+                  <strong>Delivery Address:</strong> 12 ABC Street, Near Promenade, Puducherry - 605001, India
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="order-empty-state" id="ordersEmptyContainer" style="display: none;">
+            <h4 style="font-size: 15px; font-weight: 700; color: var(--text-main);">No orders yet</h4>
+            <p style="font-size: 13px; color: var(--text-muted); max-width: 300px;">Your purchased products and delivery records will appear here.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="auditModal">
+    <div class="modal-box"
+      style="max-width: 800px; width: 95%; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header"
+        style="flex-shrink: 0; padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-secondary);">
+        <h3 class="modal-header-title"
+          style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: var(--text-main);">
+          <img src="Logo.jpeg" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="logo" />
+          Purchase Audit Report
+        </h3>
+        <button class="modal-close-btn" onclick="closeModal('auditModal')"
+          style="font-size: 24px; border: none; background: none; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-nav"
+        style="display: flex; background: var(--bg-primary); border-bottom: 1px solid var(--border-color); padding: 0 16px; flex-shrink: 0; gap: 4px; overflow-x: auto;">
+        <button class="tab-btn active" id="tabBtn0" onclick="switchAuditTab(0)"
+          style="padding: 14px 16px; border: none; background: none; font-size: 13px; font-weight: 600; color: var(--accent-color); border-bottom: 3px solid var(--accent-color); cursor: pointer; white-space: nowrap; transition: all 0.2s;">1.
+          Request & Slots</button>
+        <button class="tab-btn" id="tabBtn1" onclick="switchAuditTab(1)"
+          style="padding: 14px 16px; border: none; background: none; font-size: 13px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: all 0.2s;">2.
+          Decision Logic</button>
+        <button class="tab-btn" id="tabBtn2" onclick="switchAuditTab(2)"
+          style="padding: 14px 16px; border: none; background: none; font-size: 13px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: all 0.2s;">3.
+          Frequently Bought Together & Trust</button>
+        <button class="tab-btn" id="tabBtn3" onclick="switchAuditTab(3)"
+          style="padding: 14px 16px; border: none; background: none; font-size: 13px; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: all 0.2s;">4.
+          Payment & Order</button>
+      </div>
+
+      <div class="modal-body" id="auditModalBody"
+        style="flex: 1; overflow-y: auto; padding: 24px; background-color: var(--bg-secondary); color: var(--text-main); font-size: 14px; line-height: 1.5;">
+        <div style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+          <p>Loading audit report logs...</p>
+        </div>
+      </div>
+
+      <div class="modal-footer"
+        style="flex-shrink: 0; padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background-color: var(--bg-primary);">
+        <button class="btn btn-filled" onclick="closeModal('auditModal')">Close Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Important MVP 50 Products Info Modal -->
+  <div class="modal-overlay" id="importantModal" onclick="handleImportantBackdropClick(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 760px; width: 94%; max-height: 86vh; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.18);">
+      <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #dbeafe; color: #2563eb; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">MVP Supported Products &amp; System Guide</h3>
+            <span style="font-size: 12px; color: #64748b;">Curated 50-product catalogue, architecture &amp; reference links</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('importantModal')" style="font-size: 24px; border: none; background: none; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 4px;" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 18px 24px; background-color: var(--bg-secondary); color: var(--text-main); font-size: 13.5px; line-height: 1.5; overflow-y: auto;">
+        <div style="margin-bottom: 12px; color: #334155;">
+          <p style="margin-bottom: 6px;">
+            This <strong>AI Buyer Agent</strong> is built for our <strong>MVP</strong> and is specifically configured to search, compare, rank, and place orders across a specialized catalogue of <strong>50 supported products</strong> across partner stores (<em>ShopNest</em> &amp; <em>CartWave</em>).
+          </p>
+          <p style="margin-bottom: 0; font-size: 13px; color: #64748b;">
+            To explore all 50 items and their available color variants, please check the link below:
+          </p>
+        </div>
+
+        <!-- 2-Column Horizontal Cards Grid -->
+        <div class="important-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <!-- Card 1: 50 Products List -->
+          <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <div style="width: 28px; height: 28px; border-radius: 6px; background: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                </div>
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #2563eb;">50 Products List</div>
+              </div>
+              <p style="font-size: 12.5px; color: #475569; margin-bottom: 10px; line-height: 1.4;">
+                Explore all 50 products (shoes, shirts, jackets, gym gear, audio, chargers &amp; accessories):
+              </p>
+            </div>
+            <a href="https://github.com/Praveen123-hub/Razorpay-Buildathon/blob/main/list.txt" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600; color: #ffffff; background: #2563eb; padding: 8px 12px; border-radius: 8px; text-decoration: none; box-shadow: 0 2px 4px rgba(37,99,235,0.25); transition: background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+              <span>View Supported 50 Products List on GitHub</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+          </div>
+
+          <!-- Card 2: Want to Know how it works -->
+          <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <div style="width: 28px; height: 28px; border-radius: 6px; background: #059669; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                </div>
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #059669;">System Architecture</div>
+              </div>
+              <p style="font-size: 12.5px; color: #475569; margin-bottom: 10px; line-height: 1.4;">
+                Multi-agent pipeline, deterministic scoring, trust guardrails &amp; payment flow:
+              </p>
+            </div>
+            <a href="guide.html" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600; color: #ffffff; background: #059669; padding: 8px 12px; border-radius: 8px; text-decoration: none; box-shadow: 0 2px 4px rgba(5,150,105,0.25); transition: background 0.2s;" onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
+              <span>Want to Know how it works</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Partner Storefronts Buttons -->
+        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; margin-bottom: 12px;">
+          <div style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #475569; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #2563eb;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            Partner Storefronts (Reference &amp; Live Verification)
+          </div>
+          <div class="important-store-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <a href="shopnest.html" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; background: #232f3e; color: #febd69; border-radius: 8px; text-decoration: none; font-size: 12.5px; font-weight: 700; border: 1px solid #131921; box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: all 0.2s;" onmouseover="this.style.background='#131921'" onmouseout="this.style.background='#232f3e'">
+              <span>ShopNest Store</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+            <a href="cartwave.html" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; background: #2874f0; color: #ffffff; border-radius: 8px; text-decoration: none; font-size: 12.5px; font-weight: 700; border: 1px solid #1e57c8; box-shadow: 0 2px 4px rgba(40,116,240,0.25); transition: all 0.2s;" onmouseover="this.style.background='#1e57c8'" onmouseout="this.style.background='#2874f0'">
+              <span>CartWave Store</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+          </div>
+        </div>
+
+        <div style="font-size: 12px; color: #475569; background: #f1f5f9; padding: 10px 14px; border-radius: 8px; border-left: 3px solid #3b82f6;">
+          💡 <strong>Tip:</strong> You don't need to provide the exact product name! Just ask for what you want, and the agent will ask relevant questions to help you find the perfect match.
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 12px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background-color: var(--bg-primary); flex-shrink: 0;">
+        <button class="btn btn-filled" onclick="closeModal('importantModal')" style="padding: 7px 20px; font-size: 13px;">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Config and local API base url
+    const apiBase = (window.location.origin && window.location.origin.startsWith('http')) ? '' : 'http://localhost:8000';
+
+    // Application Session State
+    let sessionId = localStorage.getItem('agent_active_session_id') || sessionStorage.getItem('agent1_session_id') || '';
+    let isFetching = false;
+    let messages = [];
+
+    // Initialize UI Elements & Authentication Guard
+    document.addEventListener('DOMContentLoaded', async () => {
+      checkMobileMode();
+      window.addEventListener('resize', checkMobileMode);
+
+      const chatInput = document.getElementById('chatInput');
+      chatInput.addEventListener('input', () => {
+        document.getElementById('btnSend').disabled = (chatInput.value.trim().length === 0 || isFetching);
+      });
+
+      // Authentication Guard
+      const authToken = localStorage.getItem('auth_token');
+      if (!authToken) {
+        window.location.href = '/login';
+        return;
+      }
+
+      await loadCurrentUserProfile();
+      await loadProfileAddress();
+    });
+
+    // Check screen width for mobile responsive adaptations
+    function checkMobileMode() {
+      const isMobile = window.innerWidth <= 768;
+      document.getElementById('btnMobileCart').style.display = isMobile ? 'inline-block' : 'none';
+      document.getElementById('cartCloseBtn').style.display = isMobile ? 'inline-block' : 'none';
+
+      if (!isMobile) {
+        document.getElementById('cartSidebar').classList.remove('open');
+      }
+    }
+
+    function toggleCartDrawer() {
+      if (window.innerWidth <= 768) {
+        document.getElementById('cartSidebar').classList.toggle('open');
+      }
+    }
+
+    // Markdown Parser Helper for Dialogue replies
+    function formatMarkdown(text) {
+      if (!text) return '';
+      let formatted = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+      // Highlight bold text (**text**)
+      formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+      // Inline code blocks (`code`)
+      formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+
+      // Newlines to line breaks
+      formatted = formatted.replace(/\n/g, '<br/>');
+
+      // Bullet points
+      formatted = formatted.replace(/•\s*(.*?)(<br\/>|$)/g, '<li>$1</li>');
+
+      return formatted;
+    }
+
+    // Render Scored Winner Offer Card
+    function renderProductCard(offer) {
+      if (!offer) return '';
+      const price = offer.price.toLocaleString('en-IN');
+      const rating = offer.rating || 0.0;
+      const stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+      const merchantName = offer.merchant === 'shopnest' ? 'ShopNest' : 'CartWave';
+      const merchantClass = offer.merchant === 'shopnest' ? 'badge-sn' : 'badge-cw';
+
+      const itemColor = offer.color || offer.selected_color || (offer.attributes && offer.attributes.color);
+      const itemSize = offer.size || offer.selected_size || (offer.attributes && offer.attributes.size);
+      const cleanColor = itemColor ? String(itemColor).replace(/\s+/g, '_') : null;
+      const fileName = cleanColor ? `${offer.p_id}_${cleanColor}.jpg` : `${offer.p_id}.jpg`;
+      const imgSrc = `Images/${fileName}`;
+      const colorBadge = itemColor ? `<div style="font-size: 12px; font-weight: 600; color: #4338ca; margin: 4px 0 2px 0;"><span style="background: #eef2ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #c7d2fe;">Color: ${itemColor}</span></div>` : '';
+      const sizeBadge = itemSize ? `<span style="font-size: 11.5px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; color: #374151; margin-left: 6px; font-weight: 600;">Size: ${itemSize}</span>` : '';
+
+      return `
+        <div class="product-card">
+          <div class="product-card-top">
+            <div class="product-card-img-container">
+              <img class="product-card-img" src="${imgSrc}" alt="${offer.p_name}" onerror="this.onerror=null; this.src='${apiBase ? apiBase + '/' : ''}images/${fileName}';"/>
+            </div>
+            <div class="product-card-details">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span class="merchant-badge ${merchantClass}">${merchantName}</span>
+                ${sizeBadge}
+              </div>
+              <h4 class="product-title">${offer.p_name}</h4>
+              ${colorBadge}
+              <div class="product-rating-row">
+                <span class="rating-stars-color">${stars}</span>
+                <span>${rating.toFixed(1)} / 5</span>
+              </div>
+              <div class="product-price-display">₹${price}</div>
+              <div class="stock-display-status">✓ In Stock (${offer.available_stock || 'Yes'})</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Render Agent 2 Sales complementary recommendation
+    function renderRecommendationCard(rec) {
+      if (!rec || !rec.recommendation_available) return '';
+      const price = rec.price.toLocaleString('en-IN');
+      const rating = rec.rating || 0.0;
+      const stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+      const merchantName = rec.merchant === 'shopnest' ? 'ShopNest' : 'CartWave';
+      const merchantClass = rec.merchant === 'shopnest' ? 'badge-sn' : 'badge-cw';
+      const fileName = `${rec.recommended_product_id}.jpg`;
+      const imgSrc = `Images/${fileName}`;
+
+      return `
+        <div class="recommendation-card">
+          <div class="recommendation-header">⚡ Frequently Bought Together</div>
+          <div class="recommendation-body">
+            <div class="product-card-img-container">
+              <img class="product-card-img" src="${imgSrc}" alt="${rec.recommended_product_name}" onerror="this.onerror=null; this.src='${apiBase ? apiBase + '/' : ''}images/${fileName}';"/>
+            </div>
+            <div class="product-card-details">
+              <span class="merchant-badge ${merchantClass}">${merchantName}</span>
+              <h4 class="product-title">${rec.recommended_product_name}</h4>
+              <div class="product-rating-row">
+                <span class="rating-stars-color">${stars}</span>
+                <span>${rating.toFixed(1)} / 5</span>
+              </div>
+              <div class="product-price-display">₹${price}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Auto-scroll to the bottom of the chat view
+    function scrollToBottom() {
+      const chatArea = document.getElementById('chatArea');
+      chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Auto-resize composer textarea height
+    function autoResizeInput() {
+      const input = document.getElementById('chatInput');
+      input.style.height = '38px';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    }
+
+    function handleInputKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // Handle suggested clicks
+    function sendSuggestion(text) {
+      document.getElementById('chatInput').value = text;
+      autoResizeInput();
+      sendMessage();
+    }
+
+    function appendMessage(sender, text, winningOffer = null, recommendation = null, buttons = [], cartItems = []) {
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = `message-row ${sender}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = `avatar ${sender}`;
+      if (sender === 'user') {
+        avatar.innerText = '👤';
+      } else {
+        avatar.innerHTML = `<img src="Logo.jpeg" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="Avatar" />`;
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.innerHTML = formatMarkdown(text);
+
+      if (cartItems && cartItems.length > 0) {
+        cartItems.forEach(item => {
+          bubble.innerHTML += renderProductCard(item);
+        });
+      } else if (winningOffer) {
+        bubble.innerHTML += renderProductCard(winningOffer);
+      }
+
+      if (recommendation) {
+        bubble.innerHTML += renderRecommendationCard(recommendation);
+      }
+
+      if (buttons && buttons.length > 0) {
+        const btnRow = document.createElement('div');
+        btnRow.className = 'chat-actions-container';
+        buttons.forEach(btnText => {
+          const btn = document.createElement('button');
+          btn.className = 'chat-action-btn';
+          btn.innerText = btnText;
+          btn.onclick = () => {
+            document.getElementById('chatInput').value = btnText;
+            sendMessage();
+          };
+          btnRow.appendChild(btn);
+        });
+        bubble.appendChild(btnRow);
+      }
+
+      if (sender === 'agent') {
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+      } else {
+        row.appendChild(bubble);
+        row.appendChild(avatar);
+      }
+
+      container.appendChild(row);
+      scrollToBottom();
+    }
+
+    // Append loading search placeholder in-chat
+    function appendSearchIndicator() {
+      const container = document.getElementById('chatContainer');
+      const row = document.createElement('div');
+      row.className = 'message-row agent';
+      row.id = 'tempLoadingIndicator';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar agent';
+      avatar.innerHTML = `<img src="Logo.jpeg" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="Avatar" />`;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'searching-indicator';
+      bubble.innerHTML = `
+        <span class="searching-icon-pulse"></span>
+        <span>Finding the best product match...</span>
+      `;
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      container.appendChild(row);
+      scrollToBottom();
+    }
+
+    // Remove search indicator loader
+    function removeSearchIndicator() {
+      const el = document.getElementById('tempLoadingIndicator');
+      if (el) el.remove();
+    }
+
+    // Main POST dialogue transaction
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text || isFetching) return;
+
+      // Hide welcome screen on first interaction
+      document.getElementById('welcomeScreen').style.display = 'none';
+
+      // Append user bubble
+      appendMessage('user', text);
+      input.value = '';
+      autoResizeInput();
+      document.getElementById('btnSend').disabled = true;
+
+      isFetching = true;
+      appendSearchIndicator();
+
+      try {
+        const authToken = localStorage.getItem('auth_token') || '';
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
+        const res = await fetch(`${apiBase}/api/agent1/chat`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            message: text,
+            session_id: sessionId || null
+          })
+        });
+
+        removeSearchIndicator();
+
+        if (!res.ok) {
+          throw new Error('API server connection failure');
+        }
+
+        const data = await res.json();
+
+        // Store Session Token
+        if (data.session_id) {
+          sessionId = data.session_id;
+          sessionStorage.setItem('agent1_session_id', sessionId);
+          localStorage.setItem('agent_active_session_id', sessionId);
+        }
+
+        // Inline contextual action button recommendations
+        let quickButtons = [];
+        if (data.current_state === 'AWAITING_MAIN_CART_CONFIRMATION') {
+          quickButtons = ['Yes', 'No'];
+        } else if (data.current_state === 'AWAITING_COMPLEMENTARY_CART_CONFIRMATION') {
+          quickButtons = ['Yes', 'No'];
+        } else if (data.current_state === 'AWAITING_ORDER_CONFIRMATION') {
+          quickButtons = ['Yes', 'No'];
+        }
+
+        appendMessage(
+          'agent',
+          data.reply,
+          data.winning_offer,
+          data.agent2_recommendation,
+          quickButtons,
+          (data.current_state === 'AWAITING_ORDER_CONFIRMATION' || data.current_state === 'READY_FOR_PURCHASE') ? data.cart_contents : []
+        );
+
+        // Update Sidebar/Drawer Cart State
+        updateSidebarCart(data.cart_contents, data.cart_total);
+
+        if (data.razorpay_order_id && data.razorpay_key_id) {
+          openRazorpayCheckout(data.razorpay_key_id, data.razorpay_order_id, data.cart_total, sessionId);
+        }
+
+      } catch (err) {
+        removeSearchIndicator();
+        console.error('Fetch error:', err);
+        appendMessage('agent', 'Something went wrong while contacting the buyer agent. Please ensure the backend server is running and try again.');
+      } finally {
+        isFetching = false;
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('btnSend').disabled = (document.getElementById('chatInput').value.trim().length === 0);
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    function openRazorpayCheckout(keyId, orderId, totalAmount, sessId) {
+      const authToken = localStorage.getItem('auth_token') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const options = {
+        "key": keyId,
+        "amount": totalAmount * 100, // paise
+        "currency": "INR",
+        "name": "AI Buyer Agent",
+        "description": "Test Mode Payment Checkout",
+        "order_id": orderId,
+        "handler": async function (response) {
+          try {
+            appendSearchIndicator();
+            const verifyRes = await fetch(`${apiBase}/api/payment/verify`, {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify({
+                session_id: sessId,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            removeSearchIndicator();
+
+            if (!verifyRes.ok) {
+              throw new Error('Payment verification API failed');
+            }
+
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              let orderReplies = [];
+              const items = verifyData.items || [];
+              const group = {};
+              items.forEach(i => {
+                if (!group[i.merchant]) group[i.merchant] = [];
+                group[i.merchant].push(i);
+              });
+
+              Object.keys(group).forEach(m => {
+                const mTitle = m === 'shopnest' ? 'ShopNest' : (m === 'cartwave' ? 'CartWave' : m.charAt(0).toUpperCase() + m.slice(1));
+                orderReplies.push(`**Order confirmed on ${mTitle}!**`);
+                orderReplies.push(`Order ID: \`${verifyData.order_id}\``);
+                group[m].forEach(i => {
+                  orderReplies.push(`• ${i.quantity} × **${i.p_name}** — ₹${i.price.toLocaleString('en-IN')}`);
+                });
+                orderReplies.push(`Total: **₹${verifyData.total.toLocaleString('en-IN')}**\n`);
+              });
+
+              let addressStr = '';
+              let addr = (verifyData && verifyData.shipping_address && Object.keys(verifyData.shipping_address).length > 0)
+                ? verifyData.shipping_address
+                : (userProfileState && userProfileState.address ? userProfileState.address : null);
+
+              if (!addr || !(addr.recipient_name || addr.recipient) || !(addr.address_line1 || addr.line1)) {
+                try {
+                  const aRes = await fetch(`${apiBase}/api/user/address`, {
+                    headers: headers
+                  });
+                  if (aRes.ok) {
+                    const fetchedAddr = await aRes.json();
+                    if (fetchedAddr && (fetchedAddr.recipient_name || fetchedAddr.recipient)) {
+                      addr = fetchedAddr;
+                      userProfileState.address = fetchedAddr;
+                    }
+                  }
+                } catch (e) {}
+              }
+
+              if (addr && (addr.recipient_name || addr.recipient) && (addr.address_line1 || addr.line1)) {
+                const recipient = addr.recipient_name || addr.recipient || (userProfileState && userProfileState.name) || '';
+                const line1 = addr.address_line1 || addr.line1 || '';
+                const line2 = addr.address_line2 || addr.line2 || '';
+                const city = addr.city || '';
+                const state = addr.state || '';
+                const pincode = addr.pincode || '';
+                const country = addr.country || 'India';
+                const phone = addr.phone || '';
+
+                const line2Part = line2 ? `, ${line2}` : '';
+                const phonePart = phone ? `\n**Contact:** ${phone}` : '';
+                addressStr = `\n\n**Will be delivered to:**\n${recipient}\n${line1}${line2Part}\n${city}, ${state} - ${pincode}, ${country}${phonePart}`;
+              }
+
+              const finalReply = "Order confirmed!\n\n" + orderReplies.join('\n') + "Status: **CONFIRMED**\nPayment: **PAID**" + addressStr;
+
+              appendMessage('agent', finalReply, null, null, [], []);
+
+              updateSidebarCart([], 0);
+              loadProfileOrders();
+            } else {
+              appendMessage('agent', `Payment verification failed: ${verifyData.message || 'Verification rejected by server.'}`);
+            }
+          } catch (err) {
+            removeSearchIndicator();
+            console.error('Verify error:', err);
+            appendMessage('agent', 'Something went wrong during payment verification. Please try again.');
+          }
+        },
+        "prefill": {
+          "name": (userProfileState && userProfileState.name) || "Test User",
+          "email": (userProfileState && userProfileState.email) || "user@example.com",
+          "contact": (userProfileState && userProfileState.address && userProfileState.address.phone) || "9999999999"
+        },
+        "theme": {
+          "color": "#2563eb"
+        },
+        "modal": {
+          "ondismiss": function () {
+            appendMessage('agent', 'Payment was cancelled or closed. You can retry placing the order whenever you are ready.');
+          }
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    }
+
+    // Sync cart list and totals with sidebar panel elements
+    function updateSidebarCart(cartContents, totalAmount) {
+      const list = document.getElementById('cartItemsList');
+      const badgeMobile = document.getElementById('cartBadgeMobile');
+
+      const count = (cartContents || []).reduce((sum, item) => sum + item.quantity, 0);
+      badgeMobile.innerText = count;
+
+      if (!cartContents || cartContents.length === 0) {
+        list.innerHTML = `<div class="cart-empty-state">Your shopping cart is currently empty. Concluding purchase confirmation adds items here.</div>`;
+        document.getElementById('cartSubtotal').innerText = '₹0';
+        return;
+      }
+
+      list.innerHTML = cartContents.map(item => {
+        const itemTotal = item.price * item.quantity;
+        const merchantFormatted = item.merchant === 'shopnest' ? 'ShopNest' : (item.merchant === 'cartwave' ? 'CartWave' : (item.merchant ? item.merchant.charAt(0).toUpperCase() + item.merchant.slice(1) : ''));
+        const itemColor = item.color || item.selected_color || (item.attributes && item.attributes.color);
+        const itemSize = item.size || item.selected_size || (item.attributes && item.attributes.size);
+        const cleanColor = itemColor ? String(itemColor).replace(/\s+/g, '_') : null;
+        const fileName = cleanColor ? `${item.p_id}_${cleanColor}.jpg` : `${item.p_id}.jpg`;
+        const imgSrc = `Images/${fileName}`;
+        const colorTag = itemColor ? `<span style="font-size: 11px; background: #eef2ff; color: #4338ca; padding: 1px 5px; border-radius: 3px; font-weight: 600; margin-right: 4px;">Color: ${itemColor}</span>` : '';
+        const sizeTag = itemSize ? `<span style="font-size: 11px; background: #f3f4f6; color: #374151; padding: 1px 5px; border-radius: 3px; font-weight: 600;">Size: ${itemSize}</span>` : '';
+
+        return `
+          <div class="sidebar-cart-item" style="display: flex; gap: 10px; align-items: center;">
+            <img src="${imgSrc}" alt="${item.p_name}" style="width: 42px; height: 42px; object-fit: contain; border-radius: 6px; background: #fff; border: 1px solid #e2e8f0; padding: 2px;" onerror="this.onerror=null; this.src='${apiBase ? apiBase + '/' : ''}images/${fileName}';" />
+            <div class="sidebar-cart-item-info" style="flex: 1;">
+              <div class="sidebar-cart-item-name" style="font-weight: 600; font-size: 13px;">${item.p_name}</div>
+              <div style="margin-top: 2px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                ${colorTag}
+                ${sizeTag}
+              </div>
+              <div class="sidebar-cart-item-meta" style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">${item.quantity} unit${item.quantity > 1 ? 's' : ''} &bull; ${merchantFormatted}</div>
+            </div>
+            <div class="sidebar-cart-item-price" style="font-weight: 700; font-size: 13px;">₹${itemTotal.toLocaleString('en-IN')}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cartSubtotal').innerText = `₹${totalAmount.toLocaleString('en-IN')}`;
+    }
+
+    function startNewChat() {
+      // Clear visible chat messages, product cards, and recommendations
+      const chatContainer = document.getElementById('chatContainer');
+      const welcomeScreen = document.getElementById('welcomeScreen');
+      chatContainer.innerHTML = '';
+      if (welcomeScreen) {
+        welcomeScreen.style.display = 'flex';
+        chatContainer.appendChild(welcomeScreen);
+      }
+
+      // Clear cart display & totals
+      updateSidebarCart([], 0);
+
+      // Clear loading states
+      isFetching = false;
+      removeSearchIndicator();
+
+      // Stop using the previous session ID & reset local storage
+      sessionId = '';
+      sessionStorage.removeItem('agent1_session_id');
+      localStorage.removeItem('agent_active_session_id');
+
+      // Reset frontend variables
+      messages = [];
+
+      // Reset composer textarea and buttons
+      const chatInput = document.getElementById('chatInput');
+      chatInput.value = '';
+      chatInput.disabled = false;
+      document.getElementById('btnSend').disabled = true;
+      autoResizeInput();
+
+      chatInput.focus();
+    }
+
+    // Purchase Audit Report Log State & tab navigation
+    let currentAuditData = null;
+    let activeAuditTab = 0;
+
+    async function fetchAuditData() {
+      if (!sessionId) {
+        throw new Error("No active shopping session found. Please complete a search first.");
+      }
+      const res = await fetch(`${apiBase}/api/session/${sessionId}/audit`);
+      if (!res.ok) {
+        throw new Error("Failed to retrieve audit report from backend");
+      }
+      return await res.json();
+    }
+
+    async function openAuditViewer() {
+      document.getElementById('auditModal').classList.add('open');
+      const body = document.getElementById('auditModalBody');
+      body.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px 20px;"><p>Loading session audit details...</p></div>`;
+      try {
+        currentAuditData = await fetchAuditData();
+        switchAuditTab(0);
+      } catch (err) {
+        body.innerHTML = `
+          <div style="text-align: center; color: #dc2626; padding: 40px 20px;">
+            <p><strong>Error loading audit report:</strong></p>
+            <p style="margin-top: 8px; font-size: 13px; color: var(--text-muted);">${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function switchAuditTab(tabIndex) {
+      activeAuditTab = tabIndex;
+      const tabs = document.getElementsByClassName('tab-btn');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+        tabs[i].style.color = 'var(--text-muted)';
+        tabs[i].style.borderBottomColor = 'transparent';
+      }
+      const activeTab = document.getElementById(`tabBtn${tabIndex}`);
+      if (activeTab) {
+        activeTab.classList.add('active');
+        activeTab.style.color = 'var(--accent-color)';
+        activeTab.style.borderBottomColor = 'var(--accent-color)';
+      }
+      renderAuditTabContent();
+    }
+
+    function renderAuditTabContent() {
+      const body = document.getElementById('auditModalBody');
+      if (!currentAuditData) return;
+
+      let html = '';
+      if (activeAuditTab === 0) {
+        // Tab 1: Request & Slots
+        const page1 = currentAuditData.page1_buyer_request || {};
+        const slots = page1.slots_summary || {};
+        let slotsHtml = Object.keys(slots).filter(k => {
+          const val = String(slots[k]);
+          if (k.toLowerCase().includes("budget") && (val.toLowerCase().includes("no limit") || val.toLowerCase().includes("none") || val === "N/A" || !val.trim())) {
+            return false;
+          }
+          return true;
+        }).map(k => `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 10px; font-weight: 600; color: var(--text-muted); width: 40%;">${k}</td>
+            <td style="padding: 10px; font-weight: 500;">${slots[k]}</td>
+          </tr>
+        `).join('');
+
+        let historyHtml = (currentAuditData.conversation_history || []).map(msg => {
+          const isUser = msg.role === 'user';
+          const label = isUser ? 'User' : 'Buyer Agent';
+          const bg = isUser ? '#fee2e2' : '#dbeafe';
+          const col = isUser ? '#dc2626' : '#2563eb';
+          return `
+            <div style="margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; background: var(--bg-primary); border-left: 4px solid ${col};">
+              <span style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: ${col}; display: block; margin-bottom: 2px;">${label}</span>
+              <p style="margin: 0; font-size: 13px; white-space: pre-wrap;">${msg.message}</p>
+            </div>
+          `;
+        }).join('');
+
+        html = `
+          <div style="margin-bottom: 20px;">
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">Original User intent</h4>
+            <div style="padding: 12px; background: var(--bg-primary); border-radius: 8px; font-weight: 500; font-size: 13.5px; border: 1px dashed var(--border-color);">${page1.original_request}</div>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">Requirement Extraction Slots</h4>
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+              <tbody>${slotsHtml}</tbody>
+            </table>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">Pipeline Execution Overview</h4>
+            <div style="font-size: 11px; font-weight: 600; line-height: 1.6; letter-spacing: 0.5px; color: var(--accent-color); background: #eff6ff; padding: 12px; border-radius: 8px; border: 1px solid #bfdbfe; text-align: center;">
+              ${page1.execution_overview}
+            </div>
+          </div>
+          
+          <div>
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">Conversation history Trail</h4>
+            <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+              ${historyHtml || '<p style="color: var(--text-muted); text-align: center; margin: 10px 0;">No history recorded yet.</p>'}
+            </div>
+          </div>
+        `;
+      } else if (activeAuditTab === 1) {
+        // Tab 2: Decision Logic (Detailed Mathematical Representation)
+        const page2 = currentAuditData.page2_product_selection || {};
+        const candidates = page2.candidates || [];
+        const winner = page2.winner;
+        const reqs = currentAuditData.page1_buyer_request || {};
+        const priorityStr = (reqs.priority || (candidates[0] && candidates[0].selected_priority) || 'cheapest').toLowerCase();
+
+        // Priority weights from scoring_engine.py
+        let pw = 0.50, rw = 0.50, prioDisplay = "BEST BALANCE";
+        if (priorityStr.includes("cheap") || priorityStr === "price") {
+          pw = 0.90; rw = 0.10; prioDisplay = "CHEAPEST";
+        } else if (priorityStr.includes("high") || priorityStr.includes("rate") || priorityStr === "rating") {
+          pw = 0.10; rw = 0.90; prioDisplay = "HIGHEST RATED";
+        } else {
+          pw = 0.50; rw = 0.50; prioDisplay = "BEST BALANCE";
+        }
+
+        const prices = candidates.map(c => Number(c.price));
+        const minPrice = prices.length ? Math.min(...prices) : 0;
+        const maxPrice = prices.length ? Math.max(...prices) : 0;
+        const priceDelta = maxPrice - minPrice;
+
+        // 5.1 Comparison Table
+        let candCols = candidates.map(c => `<th style="padding: 10px 14px; text-transform: uppercase; font-weight: 700; color: #1e293b; background: #f1f5f9; border-bottom: 2px solid var(--border-color);">${c.merchant}</th>`).join('');
+        
+        const compMetrics = [
+          { label: "Product Name", getVal: c => c.p_name },
+          { label: "Price", getVal: c => `₹${c.price.toLocaleString('en-IN')}` },
+          { label: "Rating", getVal: c => `${c.rating.toFixed(1)} ★` },
+          { label: "Price Score", getVal: c => (c.price_score !== null && c.price_score !== undefined ? c.price_score.toFixed(4) : "N/A") },
+          { label: "Rating Score", getVal: c => (c.rating_score !== null && c.rating_score !== undefined ? c.rating_score.toFixed(4) : "N/A") },
+          { label: "Value Score", getVal: c => (c.value_score !== null && c.value_score !== undefined ? c.value_score.toFixed(4) : "N/A"), isBold: true }
+        ];
+
+        let compTableRows = compMetrics.map((m, idx) => {
+          const isAlt = idx % 2 === 1;
+          const bg = isAlt ? '#f8fafc' : '#ffffff';
+          const cells = candidates.map(c => {
+            const isWin = winner && c.p_id === winner.p_id && c.merchant.toLowerCase() === winner.merchant.toLowerCase();
+            const val = m.getVal(c);
+            const boldStyle = m.isBold ? `font-weight: 700; font-size: 14px; color: ${isWin ? '#059669' : '#1e293b'};` : 'color: #334155;';
+            const winBadge = (m.isBold && isWin) ? ` <span style="font-size: 11px; background: #ecfdf5; color: #059669; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">WINNER</span>` : '';
+            return `<td style="padding: 10px 14px; border-bottom: 1px solid var(--border-color); ${boldStyle}">${val}${winBadge}</td>`;
+          }).join('');
+
+          return `
+            <tr style="background: ${bg};">
+              <td style="padding: 10px 14px; font-weight: 600; color: #475569; width: 25%; border-bottom: 1px solid var(--border-color);">${m.label}</td>
+              ${cells}
+            </tr>
+          `;
+        }).join('');
+
+        // 5.2 Price Score Breakdown
+        let priceCalcRows = candidates.map(c => {
+          let numCalc = "";
+          if (priceDelta <= 0) {
+            numCalc = "Single price point across candidates = <strong>1.0000</strong>";
+          } else {
+            const diff = maxPrice - c.price;
+            const scoreVal = (c.price_score !== null && c.price_score !== undefined ? c.price_score.toFixed(4) : (diff / priceDelta).toFixed(4));
+            numCalc = `(₹${maxPrice.toLocaleString('en-IN')} − ₹${c.price.toLocaleString('en-IN')}) ÷ ₹${priceDelta.toLocaleString('en-IN')} = ${diff} ÷ ${priceDelta} = <strong>${scoreVal}</strong>`;
+          }
+          return `
+            <div style="padding: 8px 12px; margin-bottom: 6px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px;">
+              <span style="font-weight: 700; color: #1e293b; text-transform: uppercase;">${c.merchant}</span> (${c.p_name}): <span style="font-family: monospace; color: #0f172a;">${numCalc}</span>
+            </div>
+          `;
+        }).join('');
+
+        // 5.3 Rating Score Breakdown
+        let ratingCalcRows = candidates.map(c => {
+          const scoreVal = (c.rating_score !== null && c.rating_score !== undefined ? c.rating_score.toFixed(4) : (c.rating / 5.0).toFixed(4));
+          const numCalc = `${c.rating.toFixed(1)} ÷ 5.0 = <strong>${scoreVal}</strong>`;
+          return `
+            <div style="padding: 8px 12px; margin-bottom: 6px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px;">
+              <span style="font-weight: 700; color: #1e293b; text-transform: uppercase;">${c.merchant}</span> (${c.p_name}): <span style="font-family: monospace; color: #0f172a;">${numCalc}</span>
+            </div>
+          `;
+        }).join('');
+
+        // 5.4 Value Score Breakdown
+        let valueCalcRows = candidates.map(c => {
+          const pSc = Number(c.price_score !== null && c.price_score !== undefined ? c.price_score : (priceDelta > 0 ? (maxPrice - c.price) / priceDelta : 1.0));
+          const rSc = Number(c.rating_score !== null && c.rating_score !== undefined ? c.rating_score : (c.rating / 5.0));
+          const pPart = (pw * pSc).toFixed(4);
+          const rPart = (rw * rSc).toFixed(4);
+          const totalVal = (Number(pPart) + Number(rPart)).toFixed(4);
+          const isWin = winner && c.p_id === winner.p_id && c.merchant.toLowerCase() === winner.merchant.toLowerCase();
+          const borderStyle = isWin ? 'border: 1.5px solid #10b981; background: #ecfdf5;' : 'border: 1px solid #e2e8f0; background: #f8fafc;';
+
+          return `
+            <div style="padding: 10px 14px; margin-bottom: 8px; border-radius: 8px; ${borderStyle} font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-weight: 700; color: #1e293b; text-transform: uppercase;">${c.merchant} (${c.p_name})</span>
+                ${isWin ? '<span style="font-size: 11px; font-weight: 700; background: #059669; color: #fff; padding: 2px 8px; border-radius: 4px;">WINNER</span>' : ''}
+              </div>
+              <div style="font-family: monospace; color: #0f172a;">
+                (${pw.toFixed(2)} × ${pSc.toFixed(4)}) + (${rw.toFixed(2)} × ${rSc.toFixed(4)}) = ${pPart} + ${rPart} = <strong style="font-size: 14px; color: ${isWin ? '#047857' : '#0f172a'};">${totalVal}</strong>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // 5.5 Priority-Based Decision
+        const sortedCandidates = [...candidates].sort((a, b) => (b.value_score || 0) - (a.value_score || 0));
+        let marginStr = "N/A (Single candidate evaluated)";
+        if (sortedCandidates.length >= 2) {
+          const s1 = sortedCandidates[0].value_score || 0;
+          const s2 = sortedCandidates[1].value_score || 0;
+          const margin = (s1 - s2).toFixed(4);
+          marginStr = `${s1.toFixed(4)} − ${s2.toFixed(4)} = <strong>+${margin}</strong> in favor of ${sortedCandidates[0].merchant.toUpperCase()}`;
+        }
+
+        html = `
+          <!-- 5.1 Candidate Comparison Table -->
+          <div style="margin-bottom: 24px;">
+            <h4 style="font-weight: 700; font-size: 15px; margin-bottom: 10px; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #2563eb; color: white; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;">1</span>
+              5.1 Candidate Comparison
+            </h4>
+            <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+                <thead>
+                  <tr>
+                    <th style="padding: 10px 14px; width: 25%; color: #64748b; background: #f8fafc; border-bottom: 2px solid var(--border-color); font-weight: 700;">Metric</th>
+                    ${candCols}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${compTableRows}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 5.2 Price Score Calculation -->
+          <div style="margin-bottom: 24px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+            <h4 style="font-weight: 700; font-size: 14.5px; margin-bottom: 8px; color: #1e40af; display: flex; align-items: center; gap: 6px;">
+              ⚡ 5.2 Price Score Calculation
+            </h4>
+            <div style="font-size: 12.5px; color: #475569; margin-bottom: 6px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
+              <strong>Formula:</strong> <code>Price Score = (Max Price − Candidate Price) ÷ (Max Price − Min Price)</code> [If Max = Min, Score = 1.0000]
+            </div>
+            <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
+              <strong>Variables:</strong> Min Price = ₹${minPrice.toLocaleString('en-IN')} | Max Price = ₹${maxPrice.toLocaleString('en-IN')} | Range (Δ) = ₹${priceDelta.toLocaleString('en-IN')}
+            </div>
+            <div>
+              ${priceCalcRows}
+            </div>
+          </div>
+
+          <!-- 5.3 Rating Score Calculation -->
+          <div style="margin-bottom: 24px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+            <h4 style="font-weight: 700; font-size: 14.5px; margin-bottom: 8px; color: #1e40af; display: flex; align-items: center; gap: 6px;">
+              ★ 5.3 Rating Score Calculation
+            </h4>
+            <div style="font-size: 12.5px; color: #475569; margin-bottom: 10px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
+              <strong>Formula:</strong> <code>Rating Score = Candidate Rating ÷ 5.0</code>
+            </div>
+            <div>
+              ${ratingCalcRows}
+            </div>
+          </div>
+
+          <!-- 5.4 Value Score Calculation -->
+          <div style="margin-bottom: 24px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+            <h4 style="font-weight: 700; font-size: 14.5px; margin-bottom: 8px; color: #1e40af; display: flex; align-items: center; gap: 6px;">
+              🎯 5.4 Value Score Calculation (Priority: <span style="color: #2563eb;">${prioDisplay}</span>)
+            </h4>
+            <div style="font-size: 12.5px; color: #475569; margin-bottom: 10px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
+              <strong>Formula:</strong> <code>Value Score = (${pw.toFixed(2)} × Price Score) + (${rw.toFixed(2)} × Rating Score)</code>
+            </div>
+            <div>
+              ${valueCalcRows}
+            </div>
+          </div>
+
+          <!-- 5.5 Priority-Based Decision -->
+          <div style="margin-bottom: 24px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px;">
+            <h4 style="font-weight: 700; font-size: 14.5px; margin-bottom: 8px; color: #15803d; display: flex; align-items: center; gap: 6px;">
+              📊 5.5 Priority-Based Decision Analysis
+            </h4>
+            <div style="font-size: 13.5px; color: #166534; line-height: 1.6;">
+              <p style="margin-bottom: 6px;">• <strong>Active Priority:</strong> ${prioDisplay} (Price Weight: ${pw.toFixed(2)}, Rating Weight: ${rw.toFixed(2)})</p>
+              <p style="margin-bottom: 6px;">• <strong>Decision Margin:</strong> ${marginStr}</p>
+              <p style="margin-bottom: 6px;">• <strong>Tie Status:</strong> Clean mathematical separation — ${sortedCandidates[0] ? sortedCandidates[0].merchant.toUpperCase() : 'Winner'} clearly outperforms other candidates under active weighting.</p>
+              <p style="margin-bottom: 0;">• <strong>Rationale:</strong> ${page2.selection_reasoning || 'Selected candidate achieved the highest overall Value Score under deterministic weighting.'}</p>
+            </div>
+          </div>
+
+          <!-- 5.6 Final Winner Selection Card -->
+          <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 10px;">
+              <h4 style="font-weight: 800; font-size: 16px; margin: 0; color: #34d399; display: flex; align-items: center; gap: 8px;">
+                🏆 5.6 Deterministic Winner Selected
+              </h4>
+              <span style="background: #059669; color: white; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px;">CONFIRMED</span>
+            </div>
+            ${winner ? `
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; font-size: 13.5px;">
+                <div>
+                  <div style="color: #94a3b8; font-size: 12px;">Product & ID</div>
+                  <div style="font-weight: 700; font-size: 15px; color: #f8fafc; margin-top: 2px;">${winner.p_name} <span style="font-size: 12px; color: #cbd5e1;">(${winner.p_id})</span></div>
+                </div>
+                <div>
+                  <div style="color: #94a3b8; font-size: 12px;">Merchant</div>
+                  <div style="font-weight: 700; font-size: 15px; color: #38bdf8; margin-top: 2px; text-transform: uppercase;">${winner.merchant}</div>
+                </div>
+                <div>
+                  <div style="color: #94a3b8; font-size: 12px;">Price & Rating</div>
+                  <div style="font-weight: 700; font-size: 15px; color: #fbbf24; margin-top: 2px;">₹${winner.price.toLocaleString('en-IN')} <span style="color: #f8fafc; font-size: 13px;">(${winner.rating.toFixed(1)} ★)</span></div>
+                </div>
+                <div>
+                  <div style="color: #94a3b8; font-size: 12px;">Scores</div>
+                  <div style="font-weight: 700; font-size: 13px; color: #f8fafc; margin-top: 2px;">
+                    Price Sc: <strong>${winner.price_score !== null && winner.price_score !== undefined ? winner.price_score.toFixed(4) : 'N/A'}</strong> | Rating Sc: <strong>${winner.rating_score !== null && winner.rating_score !== undefined ? winner.rating_score.toFixed(4) : 'N/A'}</strong>
+                  </div>
+                </div>
+                <div>
+                  <div style="color: #94a3b8; font-size: 12px;">Final Value Score</div>
+                  <div style="font-weight: 800; font-size: 18px; color: #34d399; margin-top: 2px;">${winner.value_score !== null && winner.value_score !== undefined ? winner.value_score.toFixed(4) : 'N/A'}</div>
+                </div>
+              </div>
+            ` : `<p style="margin: 0; color: #94a3b8;">No winner evaluated yet.</p>`}
+          </div>
+        `;
+      } else if (activeAuditTab === 2) {
+        // Tab 3: Trust & Agent 2
+        const page3 = currentAuditData.page3_agent2_trust_layer;
+        const rec = page3.agent2_recommendation;
+        const trustVal = page3.trust_layer_validations || [];
+
+        let recHtml = '';
+        if (rec && (rec.recommended_product || rec.recommended_product_id)) {
+          recHtml = `
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; margin-bottom: 12px;">
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted); width: 35%;">Primary Product</td><td style="padding: 7px 8px; font-weight: 500;">${rec.primary_product}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Recommended Product</td><td style="padding: 7px 8px; font-weight: 500;">${rec.recommended_product}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Product ID</td><td style="padding: 7px 8px; font-weight: 500;">${rec.recommended_product_id || 'N/A'}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Merchant</td><td style="padding: 7px 8px; font-weight: 500; text-transform: uppercase;">${rec.merchant}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Price</td><td style="padding: 7px 8px; font-weight: 500;">₹${(rec.price || 0).toLocaleString('en-IN')}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Rating</td><td style="padding: 7px 8px; font-weight: 500;">${(rec.rating || 0.0).toFixed(1)} ★</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Co-Purchase Probability</td><td style="padding: 7px 8px; font-weight: 500;">${(rec.co_purchase_probability || 0).toFixed(6)}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Orders With Primary</td><td style="padding: 7px 8px; font-weight: 500;">${rec.orders_with_selected || 0}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Orders With Both</td><td style="padding: 7px 8px; font-weight: 500;">${rec.orders_with_both || 0}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Semantic Similarity</td><td style="padding: 7px 8px; font-weight: 500;">${rec.semantic_similarity !== undefined && rec.semantic_similarity !== null ? Number(rec.semantic_similarity).toFixed(4) : 'N/A'}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Compatibility</td><td style="padding: 7px 8px; font-weight: 500;">${rec.compatibility}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">Model Used</td><td style="padding: 7px 8px; font-weight: 500;">${rec.model_used}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 7px 8px; font-weight: 600; color: var(--text-muted);">LLM Status</td><td style="padding: 7px 8px; font-weight: 500;">${rec.llm_status}</td></tr>
+              </tbody>
+            </table>
+          `;
+        } else {
+          recHtml = `<p style="color: var(--text-muted); font-size: 13.5px;">No Frequently Bought Together recommendation was generated in this session.</p>`;
+        }
+
+        let trustRows = trustVal.map((t, idx) => {
+          let badgeColor = '#dbeafe';
+          let badgeTextCol = '#2563eb';
+          if (t.result === 'APPROVED') {
+            badgeColor = '#d1fae5';
+            badgeTextCol = '#065f46';
+          } else if (t.result === 'REJECTED') {
+            badgeColor = '#fee2e2';
+            badgeTextCol = '#991b1b';
+          }
+          return `
+            <tr style="border-bottom: 1px solid var(--border-color); font-size: 13.5px;">
+              <td style="padding: 10px; font-weight: bold;">${idx + 1}</td>
+              <td style="padding: 10px; font-weight: 600; color: var(--text-main);">${t.check}</td>
+              <td style="padding: 10px;">
+                <span style="display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: ${badgeColor}; color: ${badgeTextCol};">${t.result}</span>
+              </td>
+              <td style="padding: 10px; color: var(--text-muted); font-size: 12.5px;">${t.detail}</td>
+            </tr>
+          `;
+        }).join('');
+
+        let consentColor = '#6b7280';
+        let consentText = 'Awaiting Confirmation';
+        if (page3.user_consent_complementary === 'YES') {
+          consentColor = '#10b981';
+          consentText = 'YES (Approved)';
+        } else if (page3.user_consent_complementary === 'NO') {
+          consentColor = '#ef4444';
+          consentText = 'NO (Declined)';
+        }
+
+        html = `
+          <div style="margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">
+              ⚡ Frequently Bought Together Details
+            </h4>
+            ${recHtml}
+          </div>
+          
+          <div style="margin-bottom: 20px; padding: 14px; border-radius: 8px; background: var(--bg-primary); border-left: 4px solid ${consentColor};">
+            <span style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: ${consentColor}; display: block; margin-bottom: 2px;">User Consent Decision</span>
+            <span style="font-weight: 700; font-size: 15px; color: ${consentColor};">${consentText}</span>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">${page3.user_consent_detail}</p>
+          </div>
+          
+          <div>
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">
+              🛡️ Trust Layer Safety Verification Logs
+            </h4>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--border-color); font-weight: 700; font-size: 12.5px; color: var(--text-muted); background: var(--bg-primary);">
+                    <th style="padding: 10px; width: 5%;">#</th>
+                    <th style="padding: 10px; width: 35%;">Checkpoint Check</th>
+                    <th style="padding: 10px; width: 15%;">Status</th>
+                    <th style="padding: 10px; width: 45%;">Execution Detail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${trustRows || '<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--text-muted);">No Trust checks recorded.</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      } else if (activeAuditTab === 3) {
+        // Tab 4: Cart + Payment + Final Order
+        const page4 = currentAuditData.page4_cart_payment_order;
+        const cartItems = page4.cart.items || [];
+        const pay = page4.payment;
+        const order = page4.final_order;
+
+        let cartRows = cartItems.map(item => `
+          <tr style="border-bottom: 1px solid var(--border-color); font-size: 13.5px;">
+            <td style="padding: 8px; font-weight: 600;">${item.p_name}</td>
+            <td style="padding: 8px; text-transform: capitalize;">${item.merchant}</td>
+            <td style="padding: 8px; font-weight: 600;">₹${item.price.toLocaleString('en-IN')}</td>
+            <td style="padding: 8px;">${item.quantity} units</td>
+            <td style="padding: 8px; font-weight: bold; text-align: right;">₹${(item.price * item.quantity).toLocaleString('en-IN')}</td>
+          </tr>
+        `).join('');
+
+        let orderHtml = '';
+        if (order && order.orders && order.orders.length > 0) {
+          orderHtml = order.orders.map(o => {
+            const mTitle = o.merchant === 'shopnest' ? 'ShopNest' : (o.merchant === 'cartwave' ? 'CartWave' : o.merchant);
+            const itemsList = o.items.map(i => `• ${i.quantity} × **${i.p_name}** — ₹${i.price.toLocaleString('en-IN')}`).join('<br>');
+            return `
+              <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; background: #ffffff;">
+                <p style="margin: 0 0 6px 0; font-weight: 700; color: var(--accent-color); font-size: 13.5px;">Merchant: ${mTitle}</p>
+                <p style="margin: 0 0 6px 0; font-size: 12.5px; color: var(--text-muted);">Database Order ID: <code>${o.order_id}</code></p>
+                <div style="font-size: 13px; color: var(--text-main); margin-bottom: 6px;">${itemsList}</div>
+                <p style="margin: 0; font-weight: 700; font-size: 13.5px; text-align: right;">Merchant Total: ₹${o.total_amount.toLocaleString('en-IN')}</p>
+              </div>
+            `;
+          }).join('');
+        } else {
+          orderHtml = `<p style="color: var(--text-muted); font-size: 13.5px;">Final order transaction has not been written to database yet.</p>`;
+        }
+
+        let resultBg = '#f3f4f6';
+        let resultTextCol = '#4b5563';
+        if (page4.audit_result === 'SUCCESSFUL') {
+          resultBg = '#ecfdf5';
+          resultTextCol = '#047857';
+        }
+
+        html = `
+          <div style="margin-bottom: 20px;">
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">
+              🛒 Cart Summary Before Purchase
+            </h4>
+            <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 10px;">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); font-weight: 700; font-size: 12.5px; color: var(--text-muted);">
+                  <th style="padding: 8px;">Item Name</th>
+                  <th style="padding: 8px;">Merchant</th>
+                  <th style="padding: 8px;">Unit Price</th>
+                  <th style="padding: 8px;">Quantity</th>
+                  <th style="padding: 8px; text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${cartRows || '<tr><td colspan="5" style="text-align: center; padding: 15px; color: var(--text-muted);">Cart is empty.</td></tr>'}
+              </tbody>
+            </table>
+            <div style="text-align: right; font-weight: 700; font-size: 15px; color: #dc2626;">
+              Total Amount: ₹${page4.cart.total.toLocaleString('en-IN')}
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; background: #fafafa;">
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">
+              💳 Payment Details (Razorpay Test Mode)
+            </h4>
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 6px; font-weight: 600; color: var(--text-muted); width: 40%;">Order ID</td><td style="padding: 6px; font-family: monospace;">${pay.razorpay_order_id || 'N/A'}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 6px; font-weight: 600; color: var(--text-muted);">Payment ID</td><td style="padding: 6px; font-family: monospace;">${pay.razorpay_payment_id || 'N/A'}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 6px; font-weight: 600; color: var(--text-muted);">Signature Verification</td><td style="padding: 6px; font-weight: 600; color: ${pay.signature_verified ? 'green' : 'red'};">${pay.signature_verified ? 'VERIFIED' : 'PENDING'}</td></tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 6px; font-weight: 600; color: var(--text-muted);">Status</td><td style="padding: 6px; font-weight: 700;">${pay.payment_status}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <h4 style="font-weight: 700; font-size: 14px; margin-bottom: 8px; border-bottom: 2px solid var(--border-color); padding-bottom: 4px; color: var(--text-main);">
+              📦 Placed Merchant Orders
+            </h4>
+            ${orderHtml}
+          </div>
+          
+          <div style="padding: 16px; border-radius: 8px; background: ${resultBg}; border: 1px solid var(--border-color); text-align: center;">
+            <span style="font-weight: 800; font-size: 16px; letter-spacing: 1px; color: ${resultTextCol};">
+              AUDIT RESULT: ${page4.audit_result}
+            </span>
+          </div>
+        `;
+      }
+
+      body.innerHTML = html;
+    }
+
+    let robotoRegBase64 = null;
+    let robotoBoldBase64 = null;
+
+    async function setupUnicodeFont(doc) {
+      try {
+        if (!robotoRegBase64) {
+          const r1 = await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/fonts/Roboto/Roboto-Regular.ttf');
+          if (r1.ok) {
+            const buf = await r1.arrayBuffer();
+            let binary = '';
+            const bytes = new Uint8Array(buf);
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            robotoRegBase64 = window.btoa(binary);
+          }
+        }
+        if (!robotoBoldBase64) {
+          const r2 = await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/fonts/Roboto/Roboto-Medium.ttf');
+          if (r2.ok) {
+            const buf = await r2.arrayBuffer();
+            let binary = '';
+            const bytes = new Uint8Array(buf);
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            robotoBoldBase64 = window.btoa(binary);
+          }
+        }
+        if (robotoRegBase64) {
+          doc.addFileToVFS('Roboto-Regular.ttf', robotoRegBase64);
+          doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+        }
+        if (robotoBoldBase64) {
+          doc.addFileToVFS('Roboto-Bold.ttf', robotoBoldBase64);
+          doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
+        }
+        if (robotoRegBase64) {
+          doc.setFont('Roboto', 'normal');
+          return 'Roboto';
+        }
+      } catch (e) {
+        console.warn("Unicode font loading fallback to helvetica:", e);
+      }
+      return 'helvetica';
+    }
+
+    function setPdfFont(doc, fontName, weight) {
+      try {
+        doc.setFont(fontName, weight);
+      } catch (e) {
+        doc.setFont('helvetica', weight);
+      }
+    }
+
+    async function triggerAuditDownload() {
+      if (!sessionId) {
+        alert("No active session found. Please complete a search first.");
+        return;
+      }
+      try {
+        const audit = await fetchAuditData();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4"
+        });
+
+        // Initialize Unicode Font (Roboto) with fallback
+        const fn = await setupUnicodeFont(doc);
+
+        let curY = 18;
+
+        // Content-driven space assurance helper
+        function ensureSpace(neededHeight) {
+          if (curY + neededHeight > 275) {
+            doc.addPage();
+            curY = 20;
+          }
+        }
+
+        // Helper to draw horizontal divider lines
+        function drawSeparator(y) {
+          doc.setDrawColor(229, 231, 235);
+          doc.setLineWidth(0.35);
+          doc.line(15, y, 195, y);
+        }
+
+        // ===================================================
+        // HEADER & SESSION METADATA
+        // ===================================================
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(37, 99, 235); // Accent Blue
+        doc.text("AI BUYER AGENT — PURCHASE AUDIT", 15, curY);
+        curY += 6;
+        
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Audit Session ID: ${audit.session_id}`, 15, curY);
+        curY += 4.8;
+        doc.text(`Generated Timestamp: ${audit.timestamp}`, 15, curY);
+        curY += 4;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 1. INITIAL USER SHOPPING INTENT
+        // ===================================================
+        ensureSpace(22);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("1. INITIAL USER SHOPPING INTENT", 15, curY);
+        curY += 5.8;
+        
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(55, 65, 81);
+        const originalReq = (audit.page1_buyer_request && audit.page1_buyer_request.original_request) || "N/A";
+        const splitRequest = doc.splitTextToSize(`\"${originalReq}\"`, 180);
+        doc.text(splitRequest, 15, curY);
+        curY += (splitRequest.length * 4.6) + 3;
+
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 2. REQUIREMENT COLLECTION SLOTS SUMMARY
+        // ===================================================
+        ensureSpace(38);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("2. REQUIREMENT COLLECTION SLOTS SUMMARY", 15, curY);
+        curY += 5.8;
+
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9.5);
+        const rawSlots = (audit.page1_buyer_request && audit.page1_buyer_request.slots_summary) || {};
+        
+        // Filter out "Max Budget: No Limit" as required
+        const filteredSlots = {};
+        Object.keys(rawSlots).forEach(k => {
+          const val = String(rawSlots[k]);
+          if (k.toLowerCase().includes("budget") && (val.toLowerCase().includes("no limit") || val.toLowerCase().includes("none") || val === "N/A" || !val.trim())) {
+            return;
+          }
+          filteredSlots[k] = val;
+        });
+
+        Object.keys(filteredSlots).forEach(k => {
+          setPdfFont(doc, fn, "bold");
+          doc.setTextColor(107, 114, 128);
+          doc.text(k + ":", 18, curY);
+          setPdfFont(doc, fn, "normal");
+          doc.setTextColor(31, 41, 55);
+          doc.text(String(filteredSlots[k]), 68, curY);
+          curY += 5.2;
+        });
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 3. PIPELINE PROCESS OVERVIEW FLOWMAP
+        // ===================================================
+        ensureSpace(105);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("3. PIPELINE PROCESS OVERVIEW FLOWMAP", 15, curY);
+        curY += 5.8;
+
+        const flowSteps = [
+          "USER REQUEST",
+          "|",
+          "v",
+          "AGENT 1 — SLOT FILLING",
+          "|",
+          "v",
+          "PRODUCT SELECTION",
+          "|",
+          "v",
+          "TRUST LAYER — PRIMARY VALIDATION",
+          "|",
+          "v",
+          "AGENT 2 — FREQUENTLY BOUGHT TOGETHER",
+          "|",
+          "v",
+          "USER CONSENT",
+          "|",
+          "v",
+          "CART",
+          "|",
+          "v",
+          "TRUST LAYER — CART VALIDATION",
+          "|",
+          "v",
+          "RAZORPAY PAYMENT",
+          "|",
+          "v",
+          "FINAL ORDER"
+        ];
+
+        const boxTop = curY;
+        const boxHeight = (flowSteps.length * 4.4) + 4;
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(203, 213, 225);
+        doc.roundedRect(15, boxTop, 180, boxHeight, 1.5, 1.5, "FD");
+
+        let flowY = boxTop + 4.6;
+        flowSteps.forEach(step => {
+          if (step === "|" || step === "v") {
+            setPdfFont(doc, fn, "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+          } else {
+            setPdfFont(doc, fn, "bold");
+            doc.setFontSize(8.5);
+            doc.setTextColor(37, 99, 235);
+          }
+          doc.text(step, 105, flowY, { align: "center" });
+          flowY += 4.4;
+        });
+
+        curY = boxTop + boxHeight + 3.5;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 4. CANDIDATES EVALUATED
+        // ===================================================
+        ensureSpace(40);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("4. CANDIDATES EVALUATED", 15, curY);
+        curY += 5.8;
+
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(107, 114, 128);
+        doc.text("Candidate / Merchant", 15, curY);
+        doc.text("Price", 75, curY);
+        doc.text("Rating", 98, curY);
+        doc.text("Price Sc", 122, curY);
+        doc.text("Rating Sc", 147, curY);
+        doc.text("Value Sc", 172, curY);
+
+        curY += 2.8;
+        doc.setDrawColor(209, 213, 219);
+        doc.line(15, curY, 195, curY);
+        curY += 4.5;
+
+        const page2Data = audit.page2_product_selection || {};
+        const candidates = page2Data.candidates || [];
+        const winner = page2Data.winner;
+        const reqs = audit.page1_buyer_request || {};
+        const priorityStr = (reqs.priority || (candidates[0] && candidates[0].selected_priority) || 'cheapest').toLowerCase();
+
+        // Priority weights from scoring_engine.py
+        let pw = 0.50, rw = 0.50, prioDisplay = "BEST BALANCE";
+        if (priorityStr.includes("cheap") || priorityStr === "price") {
+          pw = 0.90; rw = 0.10; prioDisplay = "CHEAPEST";
+        } else if (priorityStr.includes("high") || priorityStr.includes("rate") || priorityStr === "rating") {
+          pw = 0.10; rw = 0.90; prioDisplay = "HIGHEST RATED";
+        } else {
+          pw = 0.50; rw = 0.50; prioDisplay = "BEST BALANCE";
+        }
+
+        const prices = candidates.map(c => Number(c.price));
+        const minPrice = prices.length ? Math.min(...prices) : 0;
+        const maxPrice = prices.length ? Math.max(...prices) : 0;
+        const priceDelta = maxPrice - minPrice;
+
+        candidates.forEach(c => {
+          const isWinner = winner && c.p_id === winner.p_id && c.merchant.toLowerCase() === winner.merchant.toLowerCase();
+          if (isWinner) {
+            setPdfFont(doc, fn, "bold");
+            doc.setTextColor(4, 120, 87); // Green
+          } else {
+            setPdfFont(doc, fn, "normal");
+            doc.setTextColor(31, 41, 55);
+          }
+          doc.setFontSize(9);
+
+          const nameTag = `${c.merchant.toUpperCase()} — ${c.p_name}${isWinner ? " ★ (WINNER)" : ""}`;
+          const splitName = doc.splitTextToSize(nameTag, 56);
+          doc.text(splitName, 15, curY);
+          doc.text(`₹${c.price.toLocaleString('en-IN')}`, 75, curY);
+          doc.text(`${c.rating.toFixed(1)} ★`, 98, curY);
+          doc.text(c.price_score !== null && c.price_score !== undefined ? c.price_score.toFixed(4) : "N/A", 122, curY);
+          doc.text(c.rating_score !== null && c.rating_score !== undefined ? c.rating_score.toFixed(4) : "N/A", 147, curY);
+          doc.text(c.value_score !== null && c.value_score !== undefined ? c.value_score.toFixed(4) : "N/A", 172, curY);
+
+          const rH = Math.max(splitName.length * 3.8, 4.8);
+          curY += rH + 1.5;
+        });
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 5. DETERMINISTIC WINNER SELECTION EXPLANATION
+        // ===================================================
+        ensureSpace(35);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("5. DETERMINISTIC WINNER SELECTION EXPLANATION", 15, curY);
+        curY += 5.5;
+
+        // 5.1 Candidate Comparison Table
+        ensureSpace(40);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(37, 99, 235);
+        doc.text("5.1 Candidate Comparison", 15, curY);
+        curY += 4.2;
+
+        // Table Header
+        doc.setFillColor(243, 244, 246);
+        doc.rect(15, curY, 180, 5.5, "F");
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(75, 85, 99);
+        doc.text("Metric", 18, curY + 4);
+
+        const colWidth = candidates.length > 0 ? (130 / candidates.length) : 65;
+        candidates.forEach((c, idx) => {
+          const colX = 58 + (idx * colWidth);
+          doc.text(`${c.merchant.toUpperCase()}`, colX, curY + 4);
+        });
+        curY += 6.5;
+
+        const compMetrics = [
+          { label: "Product", getVal: c => c.p_name },
+          { label: "Price", getVal: c => `₹${c.price.toLocaleString('en-IN')}` },
+          { label: "Rating", getVal: c => `${c.rating.toFixed(1)} ★` },
+          { label: "Price Score", getVal: c => (c.price_score !== null && c.price_score !== undefined ? c.price_score.toFixed(4) : "N/A") },
+          { label: "Rating Score", getVal: c => (c.rating_score !== null && c.rating_score !== undefined ? c.rating_score.toFixed(4) : "N/A") },
+          { label: "Value Score", getVal: c => (c.value_score !== null && c.value_score !== undefined ? c.value_score.toFixed(4) : "N/A"), isBold: true }
+        ];
+
+        compMetrics.forEach((m, mIdx) => {
+          const isAlt = mIdx % 2 === 1;
+          if (isAlt) {
+            doc.setFillColor(249, 250, 251);
+            doc.rect(15, curY - 0.8, 180, 5.2, "F");
+          }
+          setPdfFont(doc, fn, m.isBold ? "bold" : "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(31, 41, 55);
+          doc.text(m.label, 18, curY + 3.2);
+
+          candidates.forEach((c, idx) => {
+            const colX = 58 + (idx * colWidth);
+            const isWin = winner && c.p_id === winner.p_id && c.merchant.toLowerCase() === winner.merchant.toLowerCase();
+            if (m.isBold && isWin) {
+              setPdfFont(doc, fn, "bold");
+              doc.setTextColor(4, 120, 87);
+            } else {
+              setPdfFont(doc, fn, m.isBold ? "bold" : "normal");
+              doc.setTextColor(31, 41, 55);
+            }
+            const valStr = doc.splitTextToSize(String(m.getVal(c)), colWidth - 4);
+            doc.text(valStr, colX, curY + 3.2);
+          });
+          curY += 5.2;
+        });
+
+        curY += 2.5;
+        drawSeparator(curY);
+        curY += 5.5;
+
+        // 5.2 Price Score Calculation
+        ensureSpace(35);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(37, 99, 235);
+        doc.text("5.2 Price Score Calculation", 15, curY);
+        curY += 4.2;
+
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(55, 65, 81);
+        doc.text("Formula: Price Score = (Max Price − Candidate Price) ÷ (Max Price − Min Price)  [If Max = Min, Score = 1.0000]", 15, curY);
+        curY += 4.2;
+        doc.text(`Variables: Min Price = ₹${minPrice.toLocaleString('en-IN')} | Max Price = ₹${maxPrice.toLocaleString('en-IN')} | Range (Max − Min) = ₹${priceDelta.toLocaleString('en-IN')}`, 15, curY);
+        curY += 4.2;
+
+        candidates.forEach(c => {
+          let numCalc = "";
+          if (priceDelta <= 0) {
+            numCalc = "Single price point across candidates = 1.0000";
+          } else {
+            const diff = maxPrice - c.price;
+            numCalc = `(₹${maxPrice.toLocaleString('en-IN')} − ₹${c.price.toLocaleString('en-IN')}) ÷ ₹${priceDelta.toLocaleString('en-IN')} = ${diff} ÷ ${priceDelta} = ${(c.price_score !== null && c.price_score !== undefined ? c.price_score.toFixed(4) : (diff / priceDelta).toFixed(4))}`;
+          }
+          setPdfFont(doc, fn, "bold");
+          doc.text(`• ${c.merchant.toUpperCase()} (${c.p_name}): `, 18, curY);
+          setPdfFont(doc, fn, "normal");
+          doc.text(numCalc, 70, curY);
+          curY += 4.2;
+        });
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 5.5;
+
+        // 5.3 Rating Score Calculation
+        ensureSpace(30);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(37, 99, 235);
+        doc.text("5.3 Rating Score Calculation", 15, curY);
+        curY += 4.2;
+
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(55, 65, 81);
+        doc.text("Formula: Rating Score = Candidate Rating ÷ 5.0", 15, curY);
+        curY += 4.2;
+
+        candidates.forEach(c => {
+          const rCalc = `${c.rating.toFixed(1)} ÷ 5.0 = ${(c.rating_score !== null && c.rating_score !== undefined ? c.rating_score.toFixed(4) : (c.rating / 5.0).toFixed(4))}`;
+          setPdfFont(doc, fn, "bold");
+          doc.text(`• ${c.merchant.toUpperCase()} (${c.p_name}): `, 18, curY);
+          setPdfFont(doc, fn, "normal");
+          doc.text(rCalc, 70, curY);
+          curY += 4.2;
+        });
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 5.5;
+
+        // 5.4 Value Score Calculation
+        ensureSpace(35);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(37, 99, 235);
+        doc.text("5.4 Value Score Calculation", 15, curY);
+        curY += 4.2;
+
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(55, 65, 81);
+        doc.text(`Formula: Value Score = (${pw.toFixed(2)} × Price Score) + (${rw.toFixed(2)} × Rating Score)  [Mode: ${prioDisplay} | Weights: ${(pw * 100).toFixed(0)}% Price, ${(rw * 100).toFixed(0)}% Rating]`, 15, curY);
+        curY += 4.2;
+
+        candidates.forEach(c => {
+          const pPart = (pw * (c.price_score || 0)).toFixed(4);
+          const rPart = (rw * (c.rating_score || 0)).toFixed(4);
+          const vCalc = `(${pw.toFixed(2)} × ${(c.price_score || 0).toFixed(4)}) + (${rw.toFixed(2)} × ${(c.rating_score || 0).toFixed(4)}) = ${pPart} + ${rPart} = ${(c.value_score || 0).toFixed(4)}`;
+          setPdfFont(doc, fn, "bold");
+          doc.text(`• ${c.merchant.toUpperCase()} (${c.p_name}): `, 18, curY);
+          setPdfFont(doc, fn, "normal");
+          doc.text(vCalc, 70, curY);
+          curY += 4.2;
+        });
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 5.5;
+
+        // 5.5 Priority-Based Decision
+        ensureSpace(35);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(37, 99, 235);
+        doc.text("5.5 Priority-Based Decision", 15, curY);
+        curY += 4.2;
+
+        const runnerUp = candidates.find(c => winner && (c.p_id !== winner.p_id || c.merchant.toLowerCase() !== winner.merchant.toLowerCase()));
+        const winVal = winner ? winner.value_score : 0;
+        const runVal = runnerUp ? runnerUp.value_score : 0;
+        const margin = winVal - runVal;
+
+        const ties = candidates.filter(c => winner && (c.p_id !== winner.p_id || c.merchant.toLowerCase() !== winner.merchant.toLowerCase()) && Math.abs(c.value_score - winner.value_score) < 0.0001);
+        const hasTie = ties.length > 0;
+
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(55, 65, 81);
+        const prioSummary = `Selected Priority: ${prioDisplay} | Candidates: ${candidates.length} | Winner: ${winner ? `${winner.merchant.toUpperCase()} — ${winner.p_name}` : "N/A"}`;
+        doc.text(prioSummary, 15, curY);
+        curY += 4.2;
+
+        const reasonText = winner && runnerUp
+          ? `Under '${prioDisplay}' preference (${(pw * 100).toFixed(0)}% price, ${(rw * 100).toFixed(0)}% rating), ${winner.merchant.toUpperCase()} achieved a Value Score of ${winVal.toFixed(4)} vs ${runnerUp.merchant.toUpperCase()}'s ${runVal.toFixed(4)} (Decision Margin: +${margin.toFixed(4)}).`
+          : (audit.page2_product_selection.selection_reasoning || "Product selected based on highest calculated Value Score.");
+
+        const splitReason = doc.splitTextToSize(reasonText, 180);
+        doc.text(splitReason, 15, curY);
+        curY += (splitReason.length * 4.2) + 1.5;
+
+        const tieStatus = hasTie
+          ? "Tie Status: Score tie detected; resolved via deterministic tie-breaker hierarchy: Higher Rating Score → Lower Price → Higher Available Stock."
+          : "Tie Status: No Value Score tie occurred; winner ranked highest unconditionally.";
+        doc.text(tieStatus, 15, curY);
+        curY += 5;
+
+        // 5.6 Final Winner Selection Card
+        if (winner) {
+          ensureSpace(18);
+          doc.setFillColor(240, 253, 244);
+          doc.setDrawColor(187, 247, 208);
+          doc.roundedRect(15, curY, 180, 13, 1.5, 1.5, "FD");
+
+          setPdfFont(doc, fn, "bold");
+          doc.setFontSize(9.5);
+          doc.setTextColor(22, 101, 52);
+          doc.text(`5.6 FINAL WINNER: ${winner.merchant.toUpperCase()} — ${winner.p_name.toUpperCase()}`, 18, curY + 4.8);
+
+          setPdfFont(doc, fn, "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(21, 128, 61);
+          doc.text(`Price: ₹${winner.price.toLocaleString('en-IN')}  |  Rating: ${winner.rating.toFixed(1)} ★  |  Price Score: ${winner.price_score.toFixed(4)}  |  Rating Score: ${winner.rating_score.toFixed(4)}  |  Value Score: ${winner.value_score.toFixed(4)}  |  Margin: +${margin.toFixed(4)}`, 18, curY + 9.5);
+          curY += 16;
+        }
+
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 6. FREQUENTLY BOUGHT TOGETHER
+        // ===================================================
+        ensureSpace(48);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("6. FREQUENTLY BOUGHT TOGETHER", 15, curY);
+        curY += 5.8;
+
+        const page3Data = audit.page3_agent2_trust_layer || {};
+        const rec = page3Data.agent2_recommendation;
+        const consent = page3Data.user_consent_complementary;
+
+        // Check if dynamic recommendation exists in canonical audit
+        const hasRec = rec && (rec.recommended_product || rec.recommended_product_id || rec.recommended_product_name || rec.p_id || (rec.recommendation_available && rec.price));
+
+        if (hasRec) {
+          const primName = (rec.primary_product || (winner ? winner.p_name : "Primary Product")).toUpperCase();
+          const recName = (rec.recommended_product || rec.recommended_product_name || "Recommended Product").toUpperCase();
+          const recPid = rec.recommended_product_id || rec.p_id || "N/A";
+          const recMerchant = (rec.merchant || (winner ? winner.merchant : "N/A")).toUpperCase();
+          const recPrice = rec.price || 0;
+          const recRating = rec.rating !== undefined ? rec.rating : 0.0;
+          const coProb = rec.co_purchase_probability !== undefined ? rec.co_purchase_probability : 0.0;
+          const ordersPrimary = rec.orders_with_selected !== undefined ? rec.orders_with_selected : 0;
+          const ordersBoth = rec.orders_with_both !== undefined ? rec.orders_with_both : 0;
+          const simScore = rec.semantic_similarity !== undefined && rec.semantic_similarity !== null ? Number(rec.semantic_similarity).toFixed(4) : "N/A";
+          const compStatus = rec.compatibility || "APPROVED";
+          const modelUsed = rec.model_used || "Local Compatibility Rules";
+          const llmStat = rec.llm_status || "SUCCESS";
+
+          // Prominent recommendation banner
+          doc.setFillColor(239, 246, 255);
+          doc.setDrawColor(191, 219, 254);
+          doc.roundedRect(15, curY, 180, 13.5, 1.5, 1.5, "FD");
+
+          setPdfFont(doc, fn, "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(30, 64, 175);
+          doc.text(`${primName} → ${recName}`, 18, curY + 5.2);
+
+          setPdfFont(doc, fn, "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(37, 99, 235);
+          doc.text(`Status: RECOMMENDED  |  User Consent: ${consent || "YES"}  |  Compatibility: ${compStatus}`, 18, curY + 10.2);
+
+          curY += 17;
+
+          // 2-Column Key Value Grid
+          const recGrid = [
+            ["Primary Product:", primName, "Co-Purchase Probability:", `${Number(coProb).toFixed(6)}`],
+            ["Recommended Product:", `${recName} (${recPid})`, "Orders With Primary:", String(ordersPrimary)],
+            ["Merchant / Store:", recMerchant, "Orders With Both:", String(ordersBoth)],
+            ["Price & Rating:", `₹${Number(recPrice).toLocaleString('en-IN')} | ${Number(recRating).toFixed(1)} ★`, "Semantic Similarity:", String(simScore)],
+            ["Model Used:", String(modelUsed), "LLM Validation Status:", String(llmStat)]
+          ];
+
+          recGrid.forEach(([lbl1, val1, lbl2, val2]) => {
+            setPdfFont(doc, fn, "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(107, 114, 128);
+            doc.text(lbl1, 15, curY);
+
+            setPdfFont(doc, fn, "normal");
+            doc.setTextColor(31, 41, 55);
+            doc.text(doc.splitTextToSize(String(val1), 46), 55, curY);
+
+            setPdfFont(doc, fn, "bold");
+            doc.setTextColor(107, 114, 128);
+            doc.text(lbl2, 105, curY);
+
+            setPdfFont(doc, fn, "normal");
+            doc.setTextColor(31, 41, 55);
+            doc.text(doc.splitTextToSize(String(val2), 47), 148, curY);
+
+            curY += 5.5;
+          });
+        } else {
+          setPdfFont(doc, fn, "normal");
+          doc.setFontSize(9.5);
+          doc.setTextColor(107, 114, 128);
+          doc.text("No Frequently Bought Together recommendation was generated in this session.", 15, curY);
+          curY += 6;
+        }
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 7. USER CONSENT AUDIT RECORD
+        // ===================================================
+        ensureSpace(30);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("7. USER CONSENT AUDIT RECORD", 15, curY);
+        curY += 5.8;
+
+        const isYes = consent === "YES";
+        const isNo = consent === "NO";
+        doc.setFillColor(isYes ? 240 : (isNo ? 254 : 249), isYes ? 253 : (isNo ? 242 : 250), isYes ? 244 : (isNo ? 242 : 251));
+        doc.setDrawColor(isYes ? 187 : (isNo ? 254 : 229), isYes ? 247 : (isNo ? 202 : 231), isYes ? 208 : (isNo ? 202 : 235));
+        doc.roundedRect(15, curY, 180, 13.5, 1.5, 1.5, "FD");
+
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(isYes ? 22 : (isNo ? 185 : 75), isYes ? 101 : (isNo ? 28 : 85), isYes ? 52 : (isNo ? 28 : 99));
+        doc.text(`User Consent Decision: ${consent ? `${consent} (${isYes ? 'Approved' : 'Declined'})` : 'AWAITING CONFIRMATION'}`, 18, curY + 5.2);
+
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(55, 65, 81);
+        const consentDetail = page3Data.user_consent_detail || (isYes ? "User explicitly consented to include the complementary recommendation into the cart." : (isNo ? "User declined the complementary recommendation." : "Awaiting user confirmation."));
+        doc.text(doc.splitTextToSize(consentDetail, 172), 18, curY + 10);
+        curY += 17;
+
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 8. TRUST LAYER VALIDATION CHECKPOINT DETAILS
+        // ===================================================
+        ensureSpace(40);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("8. TRUST LAYER VALIDATION CHECKPOINT DETAILS", 15, curY);
+        curY += 5.8;
+
+        const trustVal = page3Data.trust_layer_validations || [];
+        trustVal.forEach((t, tIdx) => {
+          setPdfFont(doc, fn, "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(31, 41, 55);
+          const checkLines = doc.splitTextToSize(`${tIdx + 1}. ${t.check}`, 48);
+          doc.text(checkLines, 15, curY);
+
+          const isAppr = t.result === "APPROVED";
+          const isRej = t.result === "REJECTED";
+          doc.setTextColor(isAppr ? 4 : (isRej ? 185 : 37), isAppr ? 120 : (isRej ? 28 : 99), isAppr ? 87 : (isRej ? 28 : 235));
+          doc.text(`[${t.result}]`, 68, curY);
+
+          setPdfFont(doc, fn, "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(107, 114, 128);
+          const splitDetail = doc.splitTextToSize(t.detail, 98);
+          doc.text(splitDetail, 96, curY);
+
+          const maxLines = Math.max(checkLines.length, splitDetail.length);
+          curY += Math.max(maxLines * 4.4, 5.5) + 2;
+        });
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 9. PRE-CHECKOUT CART DETAILS
+        // ===================================================
+        ensureSpace(40);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("9. PRE-CHECKOUT CART DETAILS", 15, curY);
+        curY += 5.8;
+
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(107, 114, 128);
+        doc.text("Item Description", 15, curY);
+        doc.text("Merchant", 85, curY);
+        doc.text("Unit Price", 115, curY);
+        doc.text("Qty", 142, curY);
+        doc.text("Total Price", 168, curY);
+
+        curY += 2.8;
+        doc.setDrawColor(209, 213, 219);
+        doc.line(15, curY, 195, curY);
+        curY += 4.5;
+
+        setPdfFont(doc, fn, "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(31, 41, 55);
+
+        const page4Data = audit.page4_cart_payment_order || {};
+        const cartItems = (page4Data.cart && page4Data.cart.items) || [];
+        cartItems.forEach(i => {
+          const itemLines = doc.splitTextToSize(i.p_name, 65);
+          doc.text(itemLines, 15, curY);
+          doc.text(i.merchant.toUpperCase(), 85, curY);
+          doc.text(`₹${i.price.toLocaleString('en-IN')}`, 115, curY);
+          doc.text(`${i.quantity}`, 142, curY);
+          doc.text(`₹${(i.price * i.quantity).toLocaleString('en-IN')}`, 168, curY);
+
+          const rowH = Math.max(itemLines.length * 4.2, 4.8);
+          curY += rowH + 1.5;
+        });
+
+        curY += 2;
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(220, 38, 38);
+        const cartSubtotal = (page4Data.cart && page4Data.cart.total) || 0;
+        doc.text(`Subtotal: ₹${cartSubtotal.toLocaleString('en-IN')}`, 195, curY, { align: "right" });
+
+        curY += 5;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 10. PAYMENT PROCESSING METADATA
+        // ===================================================
+        ensureSpace(35);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("10. PAYMENT PROCESSING METADATA", 15, curY);
+        curY += 5.8;
+
+        const pay = page4Data.payment || {};
+        const payFields = [
+          ["Razorpay Order ID:", pay.razorpay_order_id || "N/A"],
+          ["Razorpay Payment ID:", pay.razorpay_payment_id || "N/A"],
+          ["Signature Verification:", pay.signature_verified ? "SUCCESSFULLY VERIFIED" : "PENDING"],
+          ["Transaction Status:", pay.payment_status || "PENDING"]
+        ];
+
+        payFields.forEach(([lbl, val]) => {
+          setPdfFont(doc, fn, "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(107, 114, 128);
+          doc.text(lbl, 15, curY);
+
+          setPdfFont(doc, fn, "normal");
+          doc.setTextColor(31, 41, 55);
+          doc.text(String(val), 70, curY);
+          curY += 5.2;
+        });
+
+        curY += 2;
+        drawSeparator(curY);
+        curY += 6;
+
+        // ===================================================
+        // 11. FINAL CONFIRMED ORDERS LOG
+        // ===================================================
+        ensureSpace(35);
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text("11. FINAL CONFIRMED ORDERS LOG", 15, curY);
+        curY += 5.8;
+
+        const ordersList = (page4Data.final_order && page4Data.final_order.orders) || [];
+        if (ordersList.length > 0) {
+          ordersList.forEach(o => {
+            setPdfFont(doc, fn, "bold");
+            doc.setFontSize(9.5);
+            doc.setTextColor(37, 99, 235);
+            doc.text(`Merchant: ${o.merchant.toUpperCase()} (DB Order ID: ${o.order_id})`, 15, curY);
+            curY += 4.8;
+
+            setPdfFont(doc, fn, "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(31, 41, 55);
+            o.items.forEach(item => {
+              const itemText = `• ${item.quantity} × ${item.p_name} — ₹${item.price.toLocaleString('en-IN')}`;
+              const splitOrderLines = doc.splitTextToSize(itemText, 175);
+              doc.text(splitOrderLines, 18, curY);
+              curY += (splitOrderLines.length * 4.2);
+            });
+            curY += 2;
+          });
+        } else {
+          setPdfFont(doc, fn, "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(107, 114, 128);
+          doc.text("Awaiting database order creation...", 15, curY);
+          curY += 5.2;
+        }
+
+        curY += 4;
+        ensureSpace(18);
+        const isSuccess = page4Data.audit_result === "SUCCESSFUL";
+        doc.setFillColor(isSuccess ? 236 : 243, isSuccess ? 253 : 244, isSuccess ? 245 : 246);
+        doc.setDrawColor(isSuccess ? 16 : 31, isSuccess ? 185 : 41, isSuccess ? 129 : 55);
+        doc.roundedRect(15, curY, 180, 12, 1.5, 1.5, "FD");
+
+        setPdfFont(doc, fn, "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(isSuccess ? 4 : 31, isSuccess ? 120 : 41, isSuccess ? 87 : 55);
+        doc.text(`AUDIT RESULT: ${page4Data.audit_result || "SUCCESSFUL"}`, 105, curY + 7.5, { align: "center" });
+
+        // Dynamic page numbering on all generated pages
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let p = 1; p <= totalPages; p++) {
+          doc.setPage(p);
+          setPdfFont(doc, fn, "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(156, 163, 175);
+          doc.text(`Page ${p} of ${totalPages}`, 195, 287, { align: "right" });
+        }
+
+        // Save PDF file
+        doc.save(`AI_Buyer_Agent_Audit_${audit.session_id.substring(0, 8)}.pdf`);
+      } catch (err) {
+        alert("Error exporting PDF audit: " + err.message);
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function openImportantModal() {
+      const modal = document.getElementById('importantModal');
+      if (modal) modal.classList.add('open');
+    }
+
+    function handleImportantBackdropClick(event) {
+      const modal = document.getElementById('importantModal');
+      if (event.target === modal) {
+        closeModal('importantModal');
+      }
+    }
+
+    // =========================================================
+    // PROFILE UI & PER-USER ORDER HISTORY MANAGEMENT
+    // =========================================================
+    const userProfileState = {
+      name: "",
+      email: "",
+      created_at: "",
+      address: {
+        recipient_name: "",
+        phone: "",
+        address_line1: "",
+        address_line2: "",
+        city: "",
+        state: "",
+        pincode: "",
+        country: "India"
+      },
+      orders: []
+    };
+
+    // Load Authenticated User Profile
+    async function loadCurrentUserProfile() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${apiBase}/api/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return;
+        }
+
+        if (!res.ok) return;
+
+        const user = await res.json();
+        userProfileState.name = user.name || "User";
+        userProfileState.email = user.email || "";
+        userProfileState.created_at = user.created_at || "";
+
+        // Update trigger button and modal header
+        const firstName = user.name ? user.name.split(' ')[0] : 'Profile';
+        const triggerNameEl = document.getElementById('profileTriggerName');
+        if (triggerNameEl) triggerNameEl.textContent = firstName;
+
+        const displayNameEl = document.getElementById('profileDisplayName');
+        if (displayNameEl) displayNameEl.textContent = user.name;
+
+        const displayEmailEl = document.getElementById('profileDisplayEmail');
+        if (displayEmailEl) displayEmailEl.textContent = user.email;
+
+        const memberSinceEl = document.getElementById('profileMemberSince');
+        if (memberSinceEl && user.created_at) {
+          try {
+            const d = new Date(user.created_at);
+            memberSinceEl.textContent = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+          } catch (e) {
+            memberSinceEl.textContent = 'Active Member';
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load user profile:', err);
+      }
+    }
+
+    // Load Authenticated User Delivery Address
+    async function loadProfileAddress() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${apiBase}/api/user/address`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return;
+        }
+
+        if (res.ok) {
+          const addr = await res.json();
+          if (addr && addr.recipient_name) {
+            userProfileState.address = addr;
+
+            document.getElementById('padRecipient').textContent = addr.recipient_name;
+            document.getElementById('padPhone').textContent = `📞 ${addr.phone}`;
+            document.getElementById('padLine1').textContent = addr.address_line1;
+
+            const padLine2 = document.getElementById('padLine2');
+            if (addr.address_line2) {
+              padLine2.textContent = addr.address_line2;
+              padLine2.style.display = 'block';
+            } else {
+              padLine2.style.display = 'none';
+            }
+
+            document.getElementById('padCityPin').textContent = `${addr.city}, ${addr.state} - ${addr.pincode}`;
+            document.getElementById('padCountry').textContent = addr.country || 'India';
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load user address:', err);
+      }
+    }
+
+    // Load Isolated Orders History for Authenticated User
+    async function loadProfileOrders() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      const listContainer = document.getElementById('ordersListContainer');
+      const emptyContainer = document.getElementById('ordersEmptyContainer');
+      const heading = document.getElementById('ordersCountHeading');
+
+      heading.textContent = 'Loading your orders...';
+
+      try {
+        const res = await fetch(`${apiBase}/api/user/orders`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return;
+        }
+
+        if (!res.ok) {
+          heading.textContent = 'Failed to load orders';
+          return;
+        }
+
+        const orders = await res.json();
+        userProfileState.orders = orders || [];
+
+        if (!orders || orders.length === 0) {
+          listContainer.style.display = 'none';
+          emptyContainer.style.display = 'flex';
+          heading.textContent = 'No orders yet';
+          return;
+        }
+
+        listContainer.style.display = 'flex';
+        emptyContainer.style.display = 'none';
+        heading.textContent = `Showing ${orders.length} Confirmed Order${orders.length > 1 ? 's' : ''}`;
+
+        listContainer.innerHTML = orders.map(order => {
+          const merchantName = order.merchant === 'shopnest' ? 'ShopNest' : (order.merchant === 'cartwave' ? 'CartWave' : order.merchant);
+          const totalFormatted = (order.total_amount || 0).toLocaleString('en-IN');
+          let formattedDate = 'Recent Order';
+          if (order.created_at) {
+            try {
+              const d = new Date(order.created_at);
+              formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            } catch (e) {}
+          }
+
+          const itemsHtml = (order.items || []).map(item => {
+            const itemPrice = (item.unit_price || item.price || 0).toLocaleString('en-IN');
+            const col = item.color ? `<span style="background: #eef2ff; color: #4338ca; padding: 1px 6px; border-radius: 3px; font-weight: 600; margin-right: 4px;">Color: ${item.color}</span>` : '';
+            const sz = item.size ? `<span style="background: #f3f4f6; color: #374151; padding: 1px 6px; border-radius: 3px; font-weight: 600; margin-right: 4px;">Size: ${item.size}</span>` : '';
+            const cleanCol = item.color ? String(item.color).replace(/\s+/g, '_') : null;
+            const fileName = cleanCol ? `${item.p_id}_${cleanCol}.jpg` : `${item.p_id}.jpg`;
+            const imgSrc = `Images/${fileName}`;
+
+            return `
+              <div class="order-item-row" style="display: flex; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                <img src="${imgSrc}" alt="${item.p_name}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 6px; background: #fff; border: 1px solid #e5e7eb; padding: 2px;" onerror="this.onerror=null; this.src='${apiBase ? apiBase + '/' : ''}images/${fileName}';" />
+                <div class="order-item-details" style="flex: 1;">
+                  <span class="order-item-name" style="font-weight: 600; font-size: 13px; color: var(--text-main);">${item.p_name}</span>
+                  <div style="margin-top: 2px; font-size: 11.5px; color: var(--text-muted);">
+                    ${col} ${sz} <span>Qty: ${item.quantity}</span>
+                  </div>
+                  <span class="order-item-meta" style="font-weight: 600; color: var(--text-main); font-size: 12px; margin-top: 2px; display: inline-block;">₹${itemPrice}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          // Immutable shipping address snapshot display
+          const snap = order.shipping_address || {};
+          const addrLine = snap.recipient_name ?
+            `${snap.recipient_name}, ${snap.address_line1}${snap.address_line2 ? ', ' + snap.address_line2 : ''}, ${snap.city}, ${snap.state} - ${snap.pincode}, ${snap.country || 'India'}` :
+            'Standard Delivery Address';
+
+          return `
+            <div class="order-card" id="orderCard_${order.id}">
+              <div class="order-card-header" onclick="toggleOrderDetails('orderCard_${order.id}')">
+                <div class="order-id-group">
+                  <span class="order-id-title">Order #${order.order_id}</span>
+                  <span class="order-date-text">Placed on ${formattedDate} &bull; Merchant: ${merchantName}</span>
+                </div>
+                <div class="order-summary-right">
+                  <span class="order-price-badge">₹${totalFormatted}</span>
+                  <span class="order-status-pill confirmed">✓ ${order.order_status || 'CONFIRMED'}</span>
+                </div>
+              </div>
+              <div class="order-card-body" style="padding: 12px 16px; background: #fff;">
+                <div class="order-items-sublist">
+                  ${itemsHtml}
+                </div>
+                <div class="order-shipping-summary" style="margin-top: 10px; font-size: 12px; color: var(--text-muted); background: #f9fafb; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                  📍 <strong>Delivery Address Snapshot:</strong> ${addrLine}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Failed to load user orders:', err);
+        heading.textContent = 'Error loading orders';
+      }
+    }
+
+    function openProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) {
+        modal.classList.add('open');
+        loadCurrentUserProfile();
+        loadProfileAddress();
+      }
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) {
+        modal.classList.remove('open');
+      }
+    }
+
+    function handleProfileBackdropClick(event) {
+      if (event.target && event.target.id === 'profileModal') {
+        closeProfileModal();
+      }
+    }
+
+    function switchProfileTab(tabName) {
+      const tabs = ['info', 'address', 'orders'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabProfile${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const pane = document.getElementById(`paneProfile${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.classList.remove('active');
+        if (pane) pane.classList.remove('active');
+      });
+
+      const activeBtn = document.getElementById(`tabProfile${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+      const activePane = document.getElementById(`paneProfile${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activePane) activePane.classList.add('active');
+
+      if (tabName === 'address') {
+        loadProfileAddress();
+      } else if (tabName === 'orders') {
+        loadProfileOrders();
+      }
+    }
+
+    function editProfileAddress() {
+      document.getElementById('profileAddressDisplay').style.display = 'none';
+      const form = document.getElementById('profileAddressForm');
+      form.classList.add('active');
+
+      const addr = userProfileState.address || {};
+      document.getElementById('paInputRecipient').value = addr.recipient_name || '';
+      document.getElementById('paInputPhone').value = addr.phone || '';
+      document.getElementById('paInputLine1').value = addr.address_line1 || '';
+      document.getElementById('paInputLine2').value = addr.address_line2 || '';
+      document.getElementById('paInputCity').value = addr.city || '';
+      document.getElementById('paInputState').value = addr.state || '';
+      document.getElementById('paInputPincode').value = addr.pincode || '';
+      if (addr.country) {
+        document.getElementById('paInputCountry').value = addr.country;
+      }
+    }
+
+    function cancelEditProfileAddress() {
+      document.getElementById('profileAddressForm').classList.remove('active');
+      document.getElementById('profileAddressDisplay').style.display = 'flex';
+    }
+
+    async function saveProfileAddress(event) {
+      event.preventDefault();
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const btnSave = document.getElementById('btnSaveProfileAddress');
+      if (btnSave) {
+        btnSave.disabled = true;
+        btnSave.textContent = 'Saving...';
+      }
+
+      const payload = {
+        recipient_name: document.getElementById('paInputRecipient').value.trim(),
+        phone: document.getElementById('paInputPhone').value.trim(),
+        address_line1: document.getElementById('paInputLine1').value.trim(),
+        address_line2: document.getElementById('paInputLine2').value.trim(),
+        city: document.getElementById('paInputCity').value.trim(),
+        state: document.getElementById('paInputState').value.trim(),
+        pincode: document.getElementById('paInputPincode').value.trim(),
+        country: document.getElementById('paInputCountry').value.trim()
+      };
+
+      try {
+        const res = await fetch(`${apiBase}/api/user/address`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const saved = await res.json();
+          userProfileState.address = saved;
+
+          // Update display card
+          document.getElementById('padRecipient').textContent = saved.recipient_name;
+          document.getElementById('padPhone').textContent = `📞 ${saved.phone}`;
+          document.getElementById('padLine1').textContent = saved.address_line1;
+
+          const padLine2 = document.getElementById('padLine2');
+          if (saved.address_line2) {
+            padLine2.textContent = saved.address_line2;
+            padLine2.style.display = 'block';
+          } else {
+            padLine2.style.display = 'none';
+          }
+
+          document.getElementById('padCityPin').textContent = `${saved.city}, ${saved.state} - ${saved.pincode}`;
+          document.getElementById('padCountry').textContent = saved.country || 'India';
+
+          cancelEditProfileAddress();
+        } else {
+          alert('Failed to save address. Please try again.');
+        }
+      } catch (err) {
+        console.error('Error saving profile address:', err);
+        alert('Network error while saving address.');
+      } finally {
+        if (btnSave) {
+          btnSave.disabled = false;
+          btnSave.textContent = 'Save Address';
+        }
+      }
+    }
+
+    function toggleOrderDetails(orderCardId) {
+      const card = document.getElementById(orderCardId);
+      if (!card) return;
+      const body = card.querySelector('.order-card-body');
+      if (body) {
+        body.style.display = (body.style.display === 'none') ? 'block' : 'none';
+      }
+    }
+
+    async function handleProfileLogout() {
+      const token = localStorage.getItem('auth_token');
+      const msg = document.getElementById('logoutStatusMsg');
+      if (msg) msg.textContent = 'Logging out...';
+
+      if (token) {
+        try {
+          await fetch(`${apiBase}/api/auth/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch (e) {}
+      }
+
+      localStorage.removeItem('auth_token');
+      sessionStorage.removeItem('agent1_session_id');
+      localStorage.removeItem('agent_active_session_id');
+      window.location.href = '/login';
+    }
+  </script>
+</body>
+
+</html>
