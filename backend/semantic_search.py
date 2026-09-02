@@ -1,18 +1,13 @@
-"""
-Local Semantic Search Module
-Powered by sentence-transformers/all-MiniLM-L6-v2 running locally in Python.
-Embeddings are computed, normalized, and cached per merchant, referencing products
-strictly via the Merchant Data Access Layer.
-"""
-
+import os
+import json
 import threading
 from typing import List, Dict, Any, Optional
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 from backend.data_access import dal, MerchantNotFoundError
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "catalog_embeddings.json")
 
 
 def format_product_text(product: Dict[str, Any]) -> str:
@@ -48,42 +43,70 @@ def format_product_text(product: Dict[str, Any]) -> str:
 
 class SemanticSearchEngine:
     """
-    Local Semantic Search Engine managing embeddings and cosine similarity searches
-    for merchant product catalogs.
+    Local Semantic Search Engine managing precomputed embeddings and cosine similarity searches
+    for merchant product catalogs with lazy loading and low-memory fallbacks.
     """
 
     def __init__(self, model_name: str = MODEL_NAME):
         self.model_name = model_name
-        self._model: Optional[SentenceTransformer] = None
+        self._model = None
         self._model_lock = threading.Lock()
 
         # In-memory caches per merchant:
-        # _embeddings_cache: merchant -> np.ndarray of shape (N, 384) (normalized)
-        # _products_cache: merchant -> List[Dict[str, Any]] (matching rows in embedding matrix)
         self._embeddings_cache: Dict[str, np.ndarray] = {}
         self._products_cache: Dict[str, List[Dict[str, Any]]] = {}
         self._cache_lock = threading.Lock()
 
+        # Load precomputed catalog embeddings immediately on init (sub-millisecond, zero PyTorch RAM)
+        self._load_precomputed_embeddings()
+
+    def _load_precomputed_embeddings(self) -> None:
+        """Loads precomputed catalog embeddings from JSON if available."""
+        if not os.path.exists(EMBEDDINGS_FILE):
+            return
+        try:
+            with open(EMBEDDINGS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            with self._cache_lock:
+                for merchant in ("shopnest", "cartwave"):
+                    if merchant in data:
+                        products = dal.get_products(merchant)
+                        p_map = {p["p_id"]: p for p in products}
+                        p_ids = data[merchant].get("p_ids", [])
+                        embeddings_list = data[merchant].get("embeddings", [])
+                        
+                        ordered_products = [p_map[pid] for pid in p_ids if pid in p_map]
+                        if ordered_products and len(ordered_products) == len(embeddings_list):
+                            self._products_cache[merchant] = ordered_products
+                            self._embeddings_cache[merchant] = np.array(embeddings_list, dtype=np.float32)
+        except Exception as e:
+            print(f"[SemanticSearch] Warning loading precomputed embeddings: {e}")
+
     @property
-    def model(self) -> SentenceTransformer:
-        """Lazy loader for SentenceTransformer to optimize startup time."""
+    def model(self):
+        """Lazy loader for SentenceTransformer to optimize memory and startup time."""
         if self._model is None:
             with self._model_lock:
                 if self._model is None:
+                    try:
+                        import torch
+                        torch.set_num_threads(1)
+                    except Exception:
+                        pass
+                    from sentence_transformers import SentenceTransformer
                     self._model = SentenceTransformer(self.model_name)
         return self._model
 
     def index_merchant(self, merchant: str, force_reload: bool = False) -> None:
         """
-        Fetches products for a merchant via the Merchant Data Access Layer,
-        computes normalized embeddings using all-MiniLM-L6-v2, and caches them in memory.
+        Computes normalized embeddings and caches them in memory.
         """
         merchant_clean = merchant.strip().lower()
         if merchant_clean not in ("shopnest", "cartwave"):
             raise MerchantNotFoundError(f"Unknown merchant '{merchant}'. Must be 'shopnest' or 'cartwave'.")
 
         with self._cache_lock:
-            if not force_reload and merchant_clean in self._embeddings_cache:
+            if not force_reload and merchant_clean in self._embeddings_cache and len(self._products_cache.get(merchant_clean, [])) > 0:
                 return
 
             products = dal.get_products(merchant_clean)
@@ -92,16 +115,19 @@ class SemanticSearchEngine:
                 self._products_cache[merchant_clean] = []
                 return
 
-            texts = [format_product_text(p) for p in products]
-            embeddings = self.model.encode(
-                texts,
-                show_progress_bar=False,
-                convert_to_numpy=True,
-                normalize_embeddings=True
-            )
-
-            self._embeddings_cache[merchant_clean] = embeddings
-            self._products_cache[merchant_clean] = products
+            try:
+                texts = [format_product_text(p) for p in products]
+                embeddings = self.model.encode(
+                    texts,
+                    show_progress_bar=False,
+                    convert_to_numpy=True,
+                    normalize_embeddings=True
+                )
+                self._embeddings_cache[merchant_clean] = embeddings
+                self._products_cache[merchant_clean] = products
+            except Exception as e:
+                print(f"[SemanticSearch] Model encode fallback: {e}")
+                self._products_cache[merchant_clean] = products
 
     def search(
         self,
@@ -121,27 +147,42 @@ class SemanticSearchEngine:
         if not query_clean:
             return []
 
-        # Ensure embeddings are pre-computed and cached
+        # Ensure embeddings are loaded
         if merchant_clean not in self._embeddings_cache:
             self.index_merchant(merchant_clean)
 
         with self._cache_lock:
-            embeddings = self._embeddings_cache[merchant_clean]
-            products = self._products_cache[merchant_clean]
+            embeddings = self._embeddings_cache.get(merchant_clean)
+            products = self._products_cache.get(merchant_clean, [])
 
-        if len(products) == 0 or embeddings.shape[0] == 0:
+        if not products:
             return []
 
-        # Encode query to normalized 384-dimensional vector
-        query_embedding = self.model.encode(
-            [query_clean],
-            show_progress_bar=False,
-            convert_to_numpy=True,
-            normalize_embeddings=True
-        )[0]
+        # Try dense neural vector search
+        scores = None
+        if embeddings is not None and len(embeddings) == len(products) and embeddings.shape[0] > 0:
+            try:
+                query_embedding = self.model.encode(
+                    [query_clean],
+                    show_progress_bar=False,
+                    convert_to_numpy=True,
+                    normalize_embeddings=True
+                )[0]
+                scores = np.dot(embeddings, query_embedding)
+            except Exception as e:
+                print(f"[SemanticSearch] Query embedding error: {e}")
+                scores = None
 
-        # Cosine similarity is exact dot product of normalized vectors
-        scores = np.dot(embeddings, query_embedding)
+        # Fallback to lexical-semantic overlap if neural encoder fails or OOM
+        if scores is None:
+            scores = []
+            query_tokens = set(query_clean.lower().split())
+            for p in products:
+                text = f"{p.get('p_name', '')} {p.get('category', '')} {p.get('description', '')}".lower()
+                matches = sum(1 for t in query_tokens if t in text)
+                score = matches / max(1, len(query_tokens))
+                scores.append(score)
+            scores = np.array(scores, dtype=np.float32)
 
         # Rank all products by similarity descending
         ranked_indices = np.argsort(scores)[::-1]
@@ -172,8 +213,10 @@ class SemanticSearchEngine:
     def warm_up(self) -> None:
         """Pre-indexes and caches embeddings for both supported merchants."""
         for m in ("shopnest", "cartwave"):
-            self.index_merchant(m)
+            if m not in self._embeddings_cache:
+                self.index_merchant(m)
 
 
 # Global singleton instance for use across the application
 semantic_search_engine = SemanticSearchEngine()
+
