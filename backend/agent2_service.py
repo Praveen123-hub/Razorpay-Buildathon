@@ -49,16 +49,15 @@ class SalesImprovementAgent:
         if not (sel_cluster and cand_cluster and sel_cluster == cand_cluster):
             return False, f"Incompatible: Category '{sel_cat}' and '{cand_cat}' belong to different clusters."
             
-        # 2. Semantic Similarity Check using local SentenceTransformer
-        from backend.semantic_search import format_product_text, semantic_search_engine
-        
-        sel_text = format_product_text(selected_product)
-        cand_text = format_product_text(candidate_product)
+        # 2. Semantic Similarity Check using precomputed catalog vector embeddings
+        from backend.semantic_search import semantic_search_engine
         
         try:
-            emb = semantic_search_engine.model.encode([sel_text, cand_text], show_progress_bar=False, normalize_embeddings=True)
-            similarity = float(np.dot(emb[0], emb[1]))
-        except Exception as e:
+            sel_pid = selected_product.get("p_id")
+            cand_pid = candidate_product.get("p_id")
+            merchant = candidate_product.get("merchant", selected_product.get("merchant", "shopnest"))
+            similarity = semantic_search_engine.compute_product_similarity(merchant, sel_pid, cand_pid)
+        except Exception:
             similarity = 0.5  # Fallback in case of exceptions
             
         # Determine dynamic similarity threshold based on category types
