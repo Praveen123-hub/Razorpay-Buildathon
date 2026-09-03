@@ -18,10 +18,12 @@ Instead of manually visiting multiple e-commerce websites to compare prices, che
 
 ### Key Architectural Highlights:
 1. **Multi-Agent Collaboration (MAS)**: Agent 1 acts as the buyer's advocate to find the best deal, while Agent 2 acts as the merchant sales optimizer recommending high-converting, compatible add-ons.
-2. **Deterministic Fairness**: 100% mathematical scoring logic eliminates AI bias and ensures the best offer (cheapest, highest-rated, or balanced) unconditionally wins.
-3. **Local Semantic Search**: In-memory vector embeddings (`all-MiniLM-L6-v2`) search catalogs by meaning in < 0.05ms without expensive external vector databases.
-4. **Zero-Trust Security Layer**: 7 strict security guardrails prevent price tampering, out-of-stock purchases, and unauthorized cart modifications.
-5. **Full Explainability & Audit Trail**: Every decision, score breakdown, and verification log is exported into interactive reports and downloadable PDFs.
+2. **Universal Agent Protocol (UAP/1.0)**: Standardized, cryptographically signed inter-agent message envelopes and discovery manifest (`/.well-known/agent.json`).
+3. **Agent Payment Protocol (AP2/1.0)**: Cryptographically bounded spending mandates, deterministic SHA-256 cart fingerprints, and verifiable settlement receipts.
+4. **Deterministic Fairness**: 100% mathematical scoring logic eliminates AI bias and ensures the best offer (cheapest, highest-rated, or balanced) unconditionally wins.
+5. **Local Semantic Search**: In-memory vector embeddings (`all-MiniLM-L6-v2`) search catalogs by meaning in < 0.05ms without expensive external vector databases.
+6. **Zero-Trust Security Layer**: 8 strict security guardrails prevent price tampering, out-of-stock purchases, and unauthorized cart modifications.
+7. **Full Explainability & Audit Trail**: Every decision, score breakdown, and protocol envelope is exported into interactive reports and downloadable PDFs.
 
 ---
 
@@ -67,14 +69,19 @@ RAZORPAY_KEY_ID=your_razorpay_key_id_here
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
 ```
 
-### Step 5: Start the Backend Server
+### Step 5: Run the Automated Protocol Tests
+```bash
+python -m unittest -v test_protocols.py
+```
+
+### Step 6: Start the Backend Server
 Launch the FastAPI application with Uvicorn:
 ```bash
 uvicorn backend.main:app --reload --port 8000
 ```
 *(On startup, the SQLite database schema `backend/data/app.db` will be initialized automatically).*
 
-### Step 6: Access the Application
+### Step 7: Access the Application
 Open your browser and navigate to:
 - **Login / Register Portal**: [http://localhost:8000](http://localhost:8000) (or `http://localhost:8000/login.html`)
 - **AI Buyer Agent Chat**: [http://localhost:8000/agent1](http://localhost:8000/agent1) (or `http://localhost:8000/agent1.html`)
@@ -93,6 +100,7 @@ Open your browser and navigate to:
 │   │   └── cartwave/           # CartWave products, inventory & orders JSON
 │   ├── agent1_service.py       # Agent 1 (FSM slot-filling & dialogue manager)
 │   ├── agent2_service.py       # Agent 2 (Co-purchase & sales optimizer)
+│   ├── ap2_service.py          # Agent Payment Protocol (AP2) mandate manager
 │   ├── audit_builder.py        # Explainability audit report generator
 │   ├── auth_service.py         # PBKDF2 user auth & session manager
 │   ├── config.py               # Environment configuration
@@ -103,7 +111,8 @@ Open your browser and navigate to:
 │   ├── schemas.py              # Pydantic request/response schemas
 │   ├── scoring_engine.py       # Deterministic mathematical offer scoring
 │   ├── semantic_search.py      # Local SentenceTransformer embedding search
-│   └── trust_layer.py          # 7-tier pre-checkout trust security guardrails
+│   ├── trust_layer.py          # 8-tier pre-checkout trust security guardrails
+│   └── uap_service.py          # Universal Agent Protocol (UAP) communication
 ├── frontend/
 │   ├── agent1.html             # AI Buyer Agent chat interface & audit modal
 │   ├── guide.html              # Interactive system architecture & logic guide
@@ -118,6 +127,7 @@ Open your browser and navigate to:
 ├── DOCUMENTATION.md            # Complete architecture & technical documentation
 ├── list.txt                    # 50 MVP supported products reference list
 ├── requirements.txt            # Python package dependencies
+├── test_protocols.py           # Protocol automated test suite
 └── README.md                   # Project overview & step-by-step setup guide
 ```
 
@@ -128,3 +138,4 @@ Open your browser and navigate to:
 For complete, in-depth architectural details, mathematical formulas, state machine diagrams, security guardrail specifications, and database schema mappings, please refer to:
 
 👉 **[`DOCUMENTATION.md`](DOCUMENTATION.md)** *(or view `guide.html` in your browser)*
+
