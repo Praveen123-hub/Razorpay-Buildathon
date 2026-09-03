@@ -6,7 +6,7 @@ An autonomous, multi-agent conversational commerce platform connecting two merch
 
 ## 🌐 Live Demo & Quick Links
 
-- **Live Demo (Deployed)**: *[Deploy URL Placeholder / Link]*
+- **Live Demo (Deployed)**: https://razorpay-agent-tqgi.onrender.com
 - **Complete System Architecture & Technical Guide**: Refer to `DOCUMENTATION.md` or open `guide.html` in your browser.
 - **Supported MVP Products (50 Items)**: `list.txt` (Check inside this file to know the products that are added)
 
