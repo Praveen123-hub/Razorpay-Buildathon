@@ -10,8 +10,9 @@ This document provides the complete, authoritative technical guide, architecture
 3. [Agent 1 — AI Buyer Agent](#3-agent-1--ai-buyer-agent)
 4. [Agent 2 — Sales Improvement Agent](#4-agent-2--sales-improvement-agent)
 5. [Local Semantic Search & Vector Embeddings](#5-local-semantic-search--vector-embeddings)
-6. [Trust Layer & The 7 Security Guardrails](#6-trust-layer--the-7-security-guardrails)
+6. [Trust Layer & The 8 Security Guardrails](#6-trust-layer--the-8-security-guardrails)
 7. [Razorpay Test Mode & Transparency Audit](#7-razorpay-test-mode--transparency-audit)
+8. [AP2 (Agent Payment Protocol) & UAP (Universal Agent Protocol)](#8-ap2-agent-payment-protocol--uap-universal-agent-protocol)
 
 ---
 
@@ -193,10 +194,10 @@ Our platform contains **50 products per merchant (100 product vectors in total)*
 
 ---
 
-## 6. Trust Layer & The 7 Security Guardrails
+## 6. Trust Layer & The 8 Security Guardrails
 
 ### Why Do We Need a Trust Layer?
-Large Language Models are probabilistic text generators. If you let an AI write directly to your database, it could invent a 90% discount, sell products with zero stock, or charge cards without authorization. The Trust Layer intercepts every action with **7 non-negotiable rules**:
+Large Language Models are probabilistic text generators. If you let an AI write directly to your database, it could invent a 90% discount, sell products with zero stock, or charge cards without authorization. The Trust Layer intercepts every action with **8 non-negotiable rules**:
 
 1. **Guardrail 1: Price Consistency & Anti-Tamper**:  
    Compares the offer price against the merchant's live catalog. If an AI hallucinates a discount, it is blocked with `PRICE_MISMATCH`.
@@ -212,6 +213,8 @@ Large Language Models are probabilistic text generators. If you let an AI write 
    Ensures recipient name, phone, street, city, state, and pincode exist in database before allowing checkout initialization.
 7. **Guardrail 7: Cryptographic Payment Signature & Idempotency**:  
    Computes `HMAC-SHA256` to verify that payment confirmations genuinely originate from Razorpay servers and prevents duplicate charges on repeated clicks.
+8. **Guardrail 8: Cryptographically Bounded AP2 Mandates & UAP Envelope Integrity**:  
+   Binds user consent to an immutable delegation token with a hard spending bound ($\text{Cart Total} \le \text{MaxAuthorizedAmount}$), SHA-256 cart content fingerprint, merchant whitelist, expiration window, and HMAC-SHA256 signature.
 
 ---
 
@@ -230,7 +233,132 @@ The platform creates a comprehensive audit report for every single session, answ
 - **Score Calculations**: Exact Price Score, Rating Score, and Value Score for all offers.
 - **Agent 2 Co-Purchase Stats**: Shows historical order counts and co-purchase percentages.
 - **Trust Layer Verification Logs**: Timestamped proof of stock and catalog price checks.
+- **UAP & AP2 Cryptographic Audit**: Verifiable inter-agent message traces, signed delegation tokens, and settlement receipts.
 - **PDF Export**: Downloadable client-side audit certificate generated via jsPDF.
+
+---
+
+## 8. AP2 (Agent Payment Protocol) & UAP (Universal Agent Protocol)
+
+### 8.1 Universal Agent Protocol (UAP/1.0)
+The Universal Agent Protocol provides an interoperable communication standard (aligned with NPCI agentic commerce guidelines) for AI agents across different stores.
+
+#### Core Architectural Capabilities
+* **Decentralized Agent Discovery**: `GET /.well-known/agent.json` or `GET /api/uap/discovery` exposes registered agents, roles (`BUYER_ORCHESTRATOR`, `MERCHANT_SALES_OPTIMIZER`), endpoints, capabilities, and public keys.
+* **Standardized Message Envelope**: Every inter-agent interaction is wrapped in a verifiable `UAPMessageEnvelope`.
+* **Cryptographic Non-Repudiation**:
+  $$\text{Signature} = \text{HMAC-SHA256}(K_{\text{uap}}, \text{"UAP/1.0"} \mathbin{\Vert} \text{sender} \mathbin{\Vert} \text{recipient} \mathbin{\Vert} \text{intent} \mathbin{\Vert} \text{timestamp} \mathbin{\Vert} \text{CanonicalPayload})$$
+
+#### Standard UAP Message Envelope Schema
+```json
+{
+  "protocol_version": "UAP/1.0",
+  "message_id": "uap_msg_7f8c9b2a1e0d3f45",
+  "sender_id": "agent1_buyer",
+  "recipient_id": "agent2_shopnest",
+  "intent": "RECOMMEND_CROSS_SELL",
+  "timestamp": "2026-09-03T10:15:30.123456+00:00",
+  "payload": {
+    "merchant": "shopnest",
+    "product_id": "SHOE_001",
+    "quantity": 1
+  },
+  "signature": "hmac_sha256_e82f1b409d..."
+}
+```
+
+---
+
+### 8.2 Agent Payment Protocol (AP2/1.0)
+AP2 standardizes the handoff between AI buyer agents, merchant order engines, and payment gateways, eliminating the risk of unconstrained agent spending.
+
+#### The 5 AP2 Mandate Constraints
+1. **Hard Budget Bound Ceiling**: The payment gateway will reject any payment claim where $\text{Claim Amount} > \text{MaxAuthorizedBound}$.
+2. **Strict Merchant Whitelist**: Delegation is locked to authorized merchant identifiers (e.g. `shopnest`, `cartwave`).
+3. **Validity Expiration Window**: Enforces time-to-live (`expires_at`), preventing stale or replayed mandate execution.
+4. **Deterministic SHA-256 Cart Contents Fingerprint**:
+   $$\text{CartHash} = \text{SHA-256}(\text{SortByMerchantAndPID}(\text{NormalizedCartItems}))$$
+   Guarantees that items, prices, and quantities cannot be tampered with between user consent and payment settlement.
+5. **Single-Use Settlement & Idempotency**: Transitioning from `AUTHORIZED` $\rightarrow$ `CLAIMED` issues an immutable `AP2SettlementReceipt`.
+
+#### AP2 Mandate Schema Example
+```json
+{
+  "mandate_id": "ap2_man_9a4f61e82b7c4d30",
+  "session_id": "sess_8f21e09c",
+  "agent_id": "agent1_buyer",
+  "authorized_merchants": ["shopnest", "cartwave"],
+  "max_amount": 2500,
+  "currency": "INR",
+  "created_at": "2026-09-03T10:15:30.123456+00:00",
+  "expires_at": "2026-09-03T11:15:30.123456+00:00",
+  "cart_hash": "a4d3f09b82e1c738e402941b...",
+  "status": "AUTHORIZED",
+  "signature": "hmac_sha256_7b82..."
+}
+```
+
+#### AP2 Settlement Receipt Schema Example
+```json
+{
+  "receipt_id": "ap2_rec_1c04d98a2e4b",
+  "mandate_id": "ap2_man_9a4f61e82b7c4d30",
+  "session_id": "sess_8f21e09c",
+  "merchant": "shopnest",
+  "amount_paid": 2400,
+  "currency": "INR",
+  "settled_at": "2026-09-03T10:18:45.654321+00:00",
+  "razorpay_payment_id": "pay_P8xY9z0A1b2c",
+  "status": "SETTLED",
+  "receipt_hash": "6f2e819b3d0a4c5e..."
+}
+```
+
+---
+
+### 8.3 End-to-End Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant A1 as Agent 1 (Buyer Agent - UAP)
+    participant A2 as Agent 2 (Merchant Agent - UAP)
+    participant AP2 as AP2 Mandate Service
+    participant Trust as Trust Layer (Guardrail #8)
+    participant Razorpay as Razorpay Gateway
+
+    User->>A1: "I need running shoes under ₹2500"
+    A1->>A2: UAP Message Envelope (INTENT: RECOMMEND_CROSS_SELL)
+    A2-->>A1: UAP Response Envelope (CROSS_SELL_RESPONSE with digital signature)
+    A1->>User: Best offer + Complementary recommendation
+    User->>A1: Approves order & sets spending mandate
+    A1->>AP2: Generate Signed AP2 Delegation Mandate (Token, Price Bound, Cart Hash)
+    AP2-->>A1: Authorized AP2 Mandate Token
+    A1->>Trust: Validate Cart Consistency + AP2 Mandate Bounds (Guardrail #8)
+    Trust-->>A1: Approved (ALLOW_SETTLEMENT)
+    A1->>Razorpay: Create Order with AP2 Claim Metadata
+    Razorpay-->>A1: Razorpay Order ID
+    User->>Razorpay: Complete Payment (Test Card / UPI)
+    Razorpay->>AP2: Claim & Verify Payment against AP2 Mandate
+    AP2-->>User: Immutable AP2 Settlement Receipt
+```
+
+---
+
+### 8.4 Dedicated Protocol Endpoints Reference
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/.well-known/agent.json` | UAP Agent Discovery Manifest |
+| `GET` | `/api/uap/discovery` | Alias for UAP Agent Discovery |
+| `GET` | `/api/uap/agents/{agent_id}` | Individual UAP agent profile & manifest |
+| `POST` | `/api/uap/message` | Standardized UAP inter-agent message inbox |
+| `GET` | `/.well-known/ap2.json` | AP2 Gateway Capabilities Discovery Manifest |
+| `GET` | `/api/ap2/discovery` | Alias for AP2 Capabilities Discovery |
+| `POST` | `/api/ap2/mandates` | Create and cryptographically sign AP2 Delegation Mandate |
+| `GET` | `/api/ap2/mandates/{mandate_id}` | Inspect active AP2 mandate status & constraints |
+| `POST` | `/api/ap2/payments/claim` | Execute payment settlement claim against mandate |
 
 ---
 

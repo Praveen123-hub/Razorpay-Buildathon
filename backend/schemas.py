@@ -272,9 +272,6 @@ class AddressResponse(BaseModel):
     state: str
     pincode: str
     country: str = "India"
-    updated_at: Optional[str] = None
-
-
 class UserOrderResponse(BaseModel):
     id: int
     user_id: int
@@ -286,4 +283,76 @@ class UserOrderResponse(BaseModel):
     items: List[Dict[str, Any]]
     shipping_address: Dict[str, Any]
     created_at: str
+
+
+# =============================================================================
+# UAP (Universal Agent Protocol) & AP2 (Agent Payment Protocol) Schemas
+# =============================================================================
+class UAPMessageEnvelope(BaseModel):
+    protocol_version: str = Field(default="UAP/1.0", description="Protocol version identifier")
+    message_id: str = Field(..., description="Unique message UUID")
+    sender_id: str = Field(..., description="Verifiable ID of sender agent (e.g., agent1_buyer)")
+    recipient_id: str = Field(..., description="Verifiable ID of recipient agent (e.g., agent2_merchant_shopnest)")
+    intent: str = Field(..., description="Standardized intent (e.g., QUERY_OFFER, RECOMMEND_CROSS_SELL, MANDATE_SYNC)")
+    timestamp: str = Field(..., description="ISO 8601 timestamp of message dispatch")
+    payload: Dict[str, Any] = Field(default_factory=dict, description="Standardized intent payload data")
+    signature: Optional[str] = Field(None, description="Cryptographic signature of the envelope")
+
+
+class UAPAgentManifest(BaseModel):
+    agent_id: str
+    name: str
+    role: str
+    protocol_version: str = "UAP/1.0"
+    endpoints: Dict[str, str]
+    capabilities: List[str]
+    supported_intents: List[str]
+    public_key: Optional[str] = None
+
+
+class AP2MandateRequest(BaseModel):
+    session_id: str = Field(..., description="Active shopping session ID")
+    max_amount: int = Field(..., ge=1, description="Upper bound spending limit in INR")
+    authorized_merchants: List[str] = Field(default=["shopnest", "cartwave"], description="Merchants permitted to charge against this mandate")
+    validity_minutes: int = Field(default=60, ge=1, le=1440, description="Mandate validity window in minutes")
+    purpose: Optional[str] = Field(default="Agentic Shopping Checkout", description="Human-readable purpose of delegation")
+    cart_items: Optional[List[Dict[str, Any]]] = Field(default=None, description="Optional explicit cart contents for delegation mandate generation")
+
+
+class AP2Mandate(BaseModel):
+    mandate_id: str = Field(..., description="Unique mandate identifier, e.g. ap2_man_...")
+    session_id: str
+    user_id: Optional[int] = None
+    agent_id: str = Field(default="agent1_buyer")
+    authorized_merchants: List[str]
+    max_amount: int = Field(..., description="Hard upper spending bound in INR")
+    currency: str = "INR"
+    created_at: str
+    expires_at: str
+    cart_hash: str = Field(..., description="SHA-256 fingerprint of authorized cart items")
+    status: str = Field(default="AUTHORIZED", description="Mandate state: AUTHORIZED, CLAIMED, EXPIRED, REVOKED")
+    signature: str = Field(..., description="HMAC-SHA256 signature guaranteeing tamper-proof mandate")
+
+
+class AP2PaymentClaimRequest(BaseModel):
+    mandate_id: str = Field(..., description="Authorized AP2 mandate ID")
+    session_id: str
+    merchant: str
+    claim_amount: int = Field(..., ge=1, description="Actual settlement amount in INR")
+    cart_items: List[Dict[str, Any]]
+    razorpay_payment_id: Optional[str] = None
+
+
+class AP2SettlementReceipt(BaseModel):
+    receipt_id: str
+    mandate_id: str
+    session_id: str
+    merchant: str
+    amount_paid: int
+    currency: str = "INR"
+    settled_at: str
+    razorpay_payment_id: str
+    status: str = "SETTLED"
+    receipt_hash: str
+
 

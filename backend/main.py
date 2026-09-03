@@ -43,13 +43,21 @@ from backend.schemas import (
     UserResponse,
     AddressRequest,
     AddressResponse,
-    UserOrderResponse
+    UserOrderResponse,
+    UAPMessageEnvelope,
+    UAPAgentManifest,
+    AP2MandateRequest,
+    AP2Mandate,
+    AP2PaymentClaimRequest,
+    AP2SettlementReceipt
 )
 from backend.payment_service import create_razorpay_order_for_session, verify_payment_for_session
 from backend.semantic_search import semantic_search_engine
 from backend.scoring_engine import scoring_engine
 from backend.agent2_service import agent2_service
 from backend.agent1_service import agent1_service
+from backend.uap_service import uap_service
+from backend.ap2_service import ap2_service
 
 app = FastAPI(
     title="Agentic Commerce Platform API",
@@ -805,6 +813,127 @@ def get_session_audit(session_id: str):
         return build_audit(session_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate session audit: {str(e)}")
+
+
+# =============================================================================
+# UAP (Universal Agent Protocol) Endpoints & Manifest Discovery
+# =============================================================================
+@app.get("/.well-known/agent.json", tags=["UAP Protocol"])
+@app.get("/api/uap/discovery", tags=["UAP Protocol"])
+def uap_discovery_manifest():
+    """
+    Standard Universal Agent Protocol (UAP) discovery endpoint.
+    Exposes registered agent capabilities, public keys, and supported intents.
+    """
+    return uap_service.get_discovery_manifest()
+
+
+@app.get("/api/uap/agents/{agent_id}", response_model=UAPAgentManifest, tags=["UAP Protocol"])
+def get_uap_agent_manifest(agent_id: str):
+    """
+    Retrieve individual agent manifest by agent ID.
+    """
+    manifest = uap_service.get_agent_manifest(agent_id)
+    if not manifest:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found in UAP registry")
+    return manifest
+
+
+@app.post("/api/uap/message", response_model=UAPMessageEnvelope, tags=["UAP Protocol"])
+def uap_message_exchange(envelope: UAPMessageEnvelope):
+    """
+    Universal Agent Protocol message exchange inbox.
+    Validates envelope signature and dispatches standardized intent.
+    """
+    try:
+        return uap_service.dispatch_message(envelope)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"UAP message processing error: {str(e)}")
+
+
+# =============================================================================
+# AP2 (Agent Payment Protocol) Endpoints & Mandate Management
+# =============================================================================
+@app.get("/.well-known/ap2.json", tags=["AP2 Protocol"])
+@app.get("/api/ap2/discovery", tags=["AP2 Protocol"])
+def ap2_discovery_manifest():
+    """
+    Standard Agent Payment Protocol (AP2) discovery endpoint.
+    Declares supported payment rails, signature algorithms, and delegation capabilities.
+    """
+    return ap2_service.get_discovery_manifest()
+
+
+@app.post("/api/ap2/mandates", response_model=AP2Mandate, tags=["AP2 Protocol"])
+def create_ap2_mandate(req: AP2MandateRequest):
+    """
+    Creates and cryptographically signs an AP2 Bounded Delegation Mandate.
+    """
+    try:
+        sid, session = agent1_service.get_session(req.session_id)
+        cart = session.get("cart_contents", [])
+        if not cart and req.cart_items:
+            cart = req.cart_items
+            session["cart_contents"] = cart
+        if not cart:
+            raise HTTPException(status_code=400, detail="Cannot issue AP2 mandate for an empty cart. Please provide cart_items.")
+
+        mandate = ap2_service.create_delegation_mandate(
+            session_id=sid,
+            cart_items=cart,
+            max_amount=req.max_amount,
+            authorized_merchants=req.authorized_merchants,
+            validity_minutes=req.validity_minutes,
+            user_id=session.get("user_id")
+        )
+        session["ap2_mandate"] = mandate.dict()
+        session["ap2_mandate_id"] = mandate.mandate_id
+        return mandate
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create AP2 mandate: {str(e)}")
+
+
+@app.get("/api/ap2/mandates/{mandate_id}", response_model=AP2Mandate, tags=["AP2 Protocol"])
+def get_ap2_mandate_status(mandate_id: str):
+    """
+    Inspects active AP2 delegation mandate constraints and state.
+    """
+    mandate = ap2_service.get_mandate(mandate_id)
+    if not mandate:
+        raise HTTPException(status_code=404, detail=f"AP2 mandate '{mandate_id}' not found")
+    return mandate
+
+
+@app.post("/api/ap2/payments/claim", response_model=AP2SettlementReceipt, tags=["AP2 Protocol"])
+def claim_ap2_payment(claim_req: AP2PaymentClaimRequest):
+    """
+    Executes a payment claim against an authorized AP2 mandate and generates an immutable settlement receipt.
+    """
+    try:
+        is_valid, reason = ap2_service.verify_mandate_for_claim(
+            mandate_id=claim_req.mandate_id,
+            cart_items=claim_req.cart_items,
+            claim_amount=claim_req.claim_amount,
+            merchant=claim_req.merchant
+        )
+        if not is_valid:
+            raise HTTPException(status_code=400, detail=f"AP2 Claim rejected: {reason}")
+
+        receipt = ap2_service.issue_settlement_receipt(
+            mandate_id=claim_req.mandate_id,
+            session_id=claim_req.session_id,
+            merchant=claim_req.merchant,
+            amount_paid=claim_req.claim_amount,
+            razorpay_payment_id=claim_req.razorpay_payment_id or f"sim_pay_{claim_req.session_id}"
+        )
+        return receipt
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AP2 payment claim failure: {str(e)}")
+
 
 
 

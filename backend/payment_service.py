@@ -75,11 +75,12 @@ def check_duplicate_payment(razorpay_payment_id: str) -> Optional[dict]:
 def create_razorpay_order_for_session(session_id: str, auth_token: Optional[str] = None) -> dict:
     """
     Identifies the session, retrieves the server-side cart, validates it
-    via the Trust Layer, validates user delivery address, converts total to paise,
-    and creates a Razorpay order.
+    via the Trust Layer (including AP2 Mandate verification), validates user delivery address,
+    converts total to paise, and creates a Razorpay order.
     """
     from backend.agent1_service import agent1_service
     from backend.auth_service import auth_service
+    from backend.ap2_service import ap2_service
     
     # 1. Retrieve session
     sid, session = agent1_service.get_session(session_id)
@@ -93,7 +94,29 @@ def create_razorpay_order_for_session(session_id: str, auth_token: Optional[str]
         reason = trust_res.get("reason", "Cart validation failed")
         raise ValueError(f"Cart validation failed by Trust Layer: {reason}")
 
-    # 3. Validate user delivery address
+    # 3. Create / Validate AP2 Delegation Mandate
+    cart_total = sum(i["price"] * i["quantity"] for i in cart)
+    mandate = session.get("ap2_mandate")
+    if not mandate:
+        mandate_obj = ap2_service.create_delegation_mandate(
+            session_id=sid,
+            cart_items=cart,
+            max_amount=cart_total,
+            user_id=session.get("user_id")
+        )
+        session["ap2_mandate"] = mandate_obj.dict()
+        session["ap2_mandate_id"] = mandate_obj.mandate_id
+        mandate = session["ap2_mandate"]
+
+    mandate_id = session.get("ap2_mandate_id")
+    for m in set(i["merchant"].strip().lower() for i in cart):
+        m_total = sum(i["price"] * i["quantity"] for i in cart if i["merchant"].strip().lower() == m)
+        ap2_val = TrustLayer.validate_ap2_mandate(mandate_id, cart, m_total, m)
+        session.setdefault("trust_layer_results", {})[f"ap2_mandate_{m}"] = ap2_val
+        if not ap2_val["approved"]:
+            raise ValueError(f"AP2 Mandate validation failed: {ap2_val.get('reason')}")
+
+    # 4. Validate user delivery address
     user_id = None
     if auth_token:
         current_user = auth_service.get_user_by_token(auth_token)
@@ -105,18 +128,19 @@ def create_razorpay_order_for_session(session_id: str, auth_token: Optional[str]
                 raise ValueError("Delivery address required. Please add your delivery address before checkout.")
             session["shipping_address"] = addr
         
-    # 4. Calculate final amount and convert to paise
-    cart_total = sum(i["price"] * i["quantity"] for i in cart)
+    # 5. Calculate final amount and convert to paise
     amount_paise = cart_total * 100
     
-    # 5. Create Razorpay Test Mode order
+    # 6. Create Razorpay Test Mode order
     client = get_razorpay_client()
     order_data = {
         "amount": amount_paise,
         "currency": "INR",
         "receipt": f"receipt_{sid}",
         "notes": {
-            "session_id": sid
+            "session_id": sid,
+            "ap2_mandate_id": mandate_id,
+            "cart_hash": mandate.get("cart_hash", "")
         }
     }
     
@@ -125,7 +149,7 @@ def create_razorpay_order_for_session(session_id: str, auth_token: Optional[str]
     except Exception as e:
         raise ValueError(f"Razorpay API failure: {str(e)}")
         
-    # 6. Store order ID in session mapping
+    # 7. Store order ID in session mapping
     key_id = os.getenv("RAZORPAY_KEY_ID", "").strip()
     session["razorpay_order_id"] = razorpay_order["id"]
     session["razorpay_key_id"] = key_id
@@ -138,7 +162,9 @@ def create_razorpay_order_for_session(session_id: str, auth_token: Optional[str]
         "razorpay_key_id": key_id,
         "amount": amount_paise,
         "currency": "INR",
-        "cart_total": cart_total
+        "cart_total": cart_total,
+        "ap2_mandate_id": mandate_id,
+        "ap2_signature": mandate.get("signature")
     }
 
 def verify_payment_for_session(
@@ -268,6 +294,21 @@ def verify_payment_for_session(
                 print(f"[Warning] Failed to record user order history: {e}")
 
 
+    # 8.5 Issue AP2 Settlement Receipts
+    from backend.ap2_service import ap2_service
+    mandate_id = session.get("ap2_mandate_id", f"ap2_man_{sid}")
+    ap2_receipts = []
+    for m, o, items in placed_orders:
+        receipt = ap2_service.issue_settlement_receipt(
+            mandate_id=mandate_id,
+            session_id=sid,
+            merchant=m,
+            amount_paid=o["total_amount"],
+            razorpay_payment_id=razorpay_payment_id
+        )
+        ap2_receipts.append(receipt.dict())
+    session["ap2_settlement_receipts"] = ap2_receipts
+
     # Record metadata for audit trail before clearing the cart
     session["pre_checkout_cart"] = copy.deepcopy(cart)
     session["razorpay_payment_id"] = razorpay_payment_id
@@ -324,7 +365,9 @@ def verify_payment_for_session(
         "order_id": order_ids,
         "total": total_amount,
         "items": items_out,
-        "shipping_address": shipping_addr_snapshot if user_id else {}
+        "shipping_address": shipping_addr_snapshot if user_id else {},
+        "ap2_mandate_id": mandate_id,
+        "ap2_settlement_receipts": ap2_receipts
     }
 
 

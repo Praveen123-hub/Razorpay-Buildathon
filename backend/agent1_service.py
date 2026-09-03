@@ -922,15 +922,37 @@ class BuyerAgent:
                 session["cart_contents"].append(self._enrich_cart_item(cart_item))
                 session["cart_total"] = sum(i["price"] * i["quantity"] for i in session["cart_contents"])
 
-                # Trigger Step 5: Agent 2 Sales Improvement Agent
+                # Trigger Step 5: Agent 2 Sales Improvement Agent via UAP (Universal Agent Protocol)
+                from backend.uap_service import uap_service
                 try:
-                    agent2_resp = agent2_service.get_recommendation(
-                        merchant=winner["merchant"],
-                        selected_product_id=winner["p_id"],
-                        current_cart_items=[winner["p_id"]]
+                    uap_req_envelope = uap_service.create_envelope(
+                        sender_id="agent1_buyer",
+                        recipient_id=f"agent2_{winner['merchant'].strip().lower()}",
+                        intent="RECOMMEND_CROSS_SELL",
+                        payload={
+                            "merchant": winner["merchant"],
+                            "product_id": winner["p_id"],
+                            "current_cart_items": [winner["p_id"]],
+                            "quantity": quantity
+                        }
                     )
-                    session["agent2_recommendation"] = agent2_resp.dict()
-                    session["agent2_recommendation_history"] = agent2_resp.dict()
+                    session.setdefault("uap_messages", []).append(uap_req_envelope.dict())
+
+                    uap_resp_envelope = uap_service.dispatch_message(uap_req_envelope)
+                    session.setdefault("uap_messages", []).append(uap_resp_envelope.dict())
+
+                    rec_payload = uap_resp_envelope.payload.get("recommendation") if uap_resp_envelope.payload else None
+                    if rec_payload:
+                        from backend.schemas import Agent2RecommendResponse
+                        agent2_resp = Agent2RecommendResponse(**rec_payload)
+                    else:
+                        agent2_resp = agent2_service.get_recommendation(
+                            merchant=winner["merchant"],
+                            selected_product_id=winner["p_id"],
+                            current_cart_items=[winner["p_id"]]
+                        )
+                    session["agent2_recommendation"] = agent2_resp.dict() if agent2_resp else None
+                    session["agent2_recommendation_history"] = agent2_resp.dict() if agent2_resp else None
                 except Exception as e:
                     agent2_resp = None
                     session["agent2_recommendation"] = None
@@ -1143,11 +1165,25 @@ class BuyerAgent:
         return self._build_response(session, reply, "AWAITING_MAIN_CART_CONFIRMATION", "ASK_MAIN_CART_CONFIRMATION")
 
     def _present_final_cart(self, session: Dict[str, Any]) -> Agent1ChatResponse:
-        """Presents the final cart summary and prompts for order confirmation."""
+        """Presents the final cart summary, binds AP2 Delegation Mandate, and prompts for order confirmation."""
+        from backend.ap2_service import ap2_service
         cart = session.get("cart_contents", [])
         total = sum(item["price"] * item["quantity"] for item in cart)
         session["cart_total"] = total
         session["current_state"] = "AWAITING_ORDER_CONFIRMATION"
+
+        # Create or update AP2 Delegation Mandate for the cart
+        try:
+            mandate = ap2_service.create_delegation_mandate(
+                session_id=session["session_id"],
+                cart_items=cart,
+                max_amount=total,
+                user_id=session.get("user_id")
+            )
+            session["ap2_mandate"] = mandate.dict()
+            session["ap2_mandate_id"] = mandate.mandate_id
+        except Exception as e:
+            session["ap2_mandate"] = None
 
         cart_lines = "\n".join(
             f"• {i['quantity']} × **{i['p_name']}** ({i['merchant'].title()}) — ₹{i['price'] * i['quantity']:,}"

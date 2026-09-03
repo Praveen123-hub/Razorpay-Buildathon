@@ -623,6 +623,7 @@
       <button class="tab-btn" onclick="switchTab(event, 'semantic')">5. Semantic Search</button>
       <button class="tab-btn" onclick="switchTab(event, 'trust')">6. Trust Layer</button>
       <button class="tab-btn" onclick="switchTab(event, 'payments')">7. Payments & Audit</button>
+      <button class="tab-btn" onclick="switchTab(event, 'protocols')">8. AP2 & UAP Protocols</button>
     </div>
   </nav>
 
@@ -1375,6 +1376,175 @@
       </div>
     </section>
 
+    <!-- ======================================================================
+         TAB 8: AP2 & UAP PROTOCOLS ARCHITECTURE & SPECIFICATIONS
+         ====================================================================== -->
+    <section id="pane-protocols" class="tab-pane">
+      <h2 class="section-title">8. AP2 (Agent Payment Protocol) & UAP (Universal Agent Protocol)</h2>
+      <p class="section-subtitle">Standardized machine-to-machine agent communication, discovery, and bounded cryptographic payment delegation.</p>
+
+      <div class="grid-2">
+        <!-- UAP Overview Card -->
+        <div class="card accent-border">
+          <span class="card-badge badge-blue">UAP/1.0 Standard</span>
+          <h3 class="card-title">Universal Agent Protocol (UAP)</h3>
+          <p class="card-text">
+            <b>UAP</b> is an interoperable protocol (aligned with NPCI agentic standards) that standardizes how autonomous and semi-autonomous AI agents discover each other, authenticate identities, and exchange structured intent envelopes across diverse merchant ecosystems.
+          </p>
+
+          <div class="alert-box alert-blue" style="margin: 14px 0;">
+            <b>Standard Agent Envelope Schema:</b><br>
+            Every inter-agent message between Agent 1 (Buyer) and Agent 2 (Merchant Sales) is encapsulated in a signed <code>UAPMessageEnvelope</code>.
+          </div>
+
+          <div class="code-block">
+<pre><code>{
+  "protocol_version": "UAP/1.0",
+  "message_id": "uap_msg_7f8c9b2a1e0d3f45",
+  "sender_id": "agent1_buyer",
+  "recipient_id": "agent2_shopnest",
+  "intent": "RECOMMEND_CROSS_SELL",
+  "timestamp": "2026-09-03T10:15:30Z",
+  "payload": {
+    "merchant": "shopnest",
+    "product_id": "SHOE_001",
+    "quantity": 1
+  },
+  "signature": "hmac_sha256_e82f1b409d..."
+}</code></pre>
+          </div>
+
+          <ul class="step-list" style="margin-top: 14px;">
+            <li class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <h4>Agent Discovery Manifest</h4>
+                <p>Hosts <code>/.well-known/agent.json</code> declaring active roles (<code>BUYER_ORCHESTRATOR</code>, <code>MERCHANT_SALES_OPTIMIZER</code>), endpoints, and supported intents.</p>
+              </div>
+            </li>
+            <li class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <h4>Cryptographic Envelope Non-Repudiation</h4>
+                <p>Guarantees inter-agent integrity via HMAC-SHA256 signatures over canonical message fields.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- AP2 Overview Card -->
+        <div class="card green-border">
+          <span class="card-badge badge-green">AP2/1.0 Standard</span>
+          <h3 class="card-title">Agent Payment Protocol (AP2)</h3>
+          <p class="card-text">
+            <b>AP2</b> establishes a secure, bounded financial interface for AI agents. Instead of sharing raw payment credentials with AI models, AP2 issues <b>Cryptographically Bounded Delegation Mandates</b> and verifiable settlement claims.
+          </p>
+
+          <div class="alert-box alert-green" style="margin: 14px 0;">
+            <b>The 5 AP2 Mandate Constraints:</b><br>
+            1. Hard Maximum Spending Ceiling (₹ Max Bound)<br>
+            2. Strict Merchant Scope Whitelist (e.g. ShopNest, CartWave)<br>
+            3. Expiration Time Window (e.g. 60 min validity)<br>
+            4. SHA-256 Cart Contents Fingerprint (Anti-tampering)<br>
+            5. Cryptographic Signature & Single-use Settlement
+          </div>
+
+          <div class="code-block">
+<pre><code>{
+  "mandate_id": "ap2_man_9a4f61e82b7c4d30",
+  "agent_id": "agent1_buyer",
+  "authorized_merchants": ["shopnest"],
+  "max_amount": 2400,
+  "currency": "INR",
+  "expires_at": "2026-09-03T11:15:30Z",
+  "cart_hash": "a4d3f09b82e1c7...",
+  "status": "AUTHORIZED",
+  "signature": "hmac_sha256_7b82..."
+}</code></pre>
+          </div>
+
+          <ul class="step-list" style="margin-top: 14px;">
+            <li class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <h4>Trust Layer Guardrail #8</h4>
+                <p>Verifies mandate validity, budget ceiling, cart hash, and active expiry before payment gateway handoff.</p>
+              </div>
+            </li>
+            <li class="step-item">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <h4>Verifiable Settlement Receipt</h4>
+                <p>Generates immutable <code>AP2SettlementReceipt</code> containing transaction receipt hash upon Razorpay completion.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Full Protocol Comparison Table -->
+      <div class="card" style="margin-top: 20px;">
+        <span class="card-badge badge-blue">Protocol Specification Summary</span>
+        <h3 class="card-title">Comparative Architecture: UAP vs AP2</h3>
+        <table class="table-custom" style="width:100%; margin-top:14px; border-collapse:collapse;">
+          <thead>
+            <tr style="background:var(--bg-surface); text-align:left;">
+              <th style="padding:10px; border:1px solid var(--border-color);">Attribute</th>
+              <th style="padding:10px; border:1px solid var(--border-color);">Universal Agent Protocol (UAP/1.0)</th>
+              <th style="padding:10px; border:1px solid var(--border-color);">Agent Payment Protocol (AP2/1.0)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:10px; border:1px solid var(--border-color);"><b>Primary Scope</b></td>
+              <td style="padding:10px; border:1px solid var(--border-color);">Inter-agent communication, discovery & negotiation</td>
+              <td style="padding:10px; border:1px solid var(--border-color);">Bounded financial authorization & payment execution</td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border:1px solid var(--border-color);"><b>Discovery Endpoint</b></td>
+              <td style="padding:10px; border:1px solid var(--border-color);"><code>GET /.well-known/agent.json</code></td>
+              <td style="padding:10px; border:1px solid var(--border-color);"><code>GET /.well-known/ap2.json</code></td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border:1px solid var(--border-color);"><b>Message / Token Unit</b></td>
+              <td style="padding:10px; border:1px solid var(--border-color);"><code>UAPMessageEnvelope</code> (Intent + Payload + Signature)</td>
+              <td style="padding:10px; border:1px solid var(--border-color);"><code>AP2Mandate</code> (Price Bound + Cart Hash + Signature)</td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border:1px solid var(--border-color);"><b>Cryptographic Proof</b></td>
+              <td style="padding:10px; border:1px solid var(--border-color);">HMAC-SHA256 inter-agent message signing</td>
+              <td style="padding:10px; border:1px solid var(--border-color);">HMAC-SHA256 mandate signing & SHA-256 cart fingerprint</td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border:1px solid var(--border-color);"><b>Payment Rails</b></td>
+              <td style="padding:10px; border:1px solid var(--border-color);">Agnostic intent routing</td>
+              <td style="padding:10px; border:1px solid var(--border-color);">Razorpay Test Mode / UPI tokenized settlement</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Interactive Live Protocol Inspector Playground -->
+      <div class="card accent-border" style="margin-top: 20px;">
+        <span class="card-badge badge-purple">Interactive Live Simulator</span>
+        <h3 class="card-title">Live Protocol Inspector & Playground</h3>
+        <p class="card-text">
+          Directly query live protocol endpoints on the running server to inspect manifests, verify message envelopes, and inspect mandates.
+        </p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin:16px 0;">
+          <button class="btn-guide sim-btn btn-try-out" onclick="runLiveUAPDiscovery(this)">1. Test UAP Discovery (/.well-known/agent.json)</button>
+          <button class="btn-guide sim-btn btn-github" onclick="runLiveAP2Discovery(this)">2. Test AP2 Discovery (/.well-known/ap2.json)</button>
+          <button class="btn-guide sim-btn btn-github" onclick="runLiveUAPMessageTest(this)">3. Test Inter-Agent UAP Message Dispatch</button>
+          <button class="btn-guide sim-btn btn-github" onclick="runLiveAP2MandateTest(this)">4. Test AP2 Mandate Creation & Cart Hash</button>
+        </div>
+
+        <div id="protocol-live-output" style="background:#0f172a; color:#38bdf8; padding:16px; border-radius:var(--radius-md); font-family:monospace; font-size:12px; max-height:280px; overflow-y:auto; display:none;">
+          <pre id="protocol-output-content">// Output will appear here</pre>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Footer -->
@@ -1382,7 +1552,7 @@
     <p>Agentic Commerce Platform &copy; 2026 • Multi-Agent Architecture & System Guide</p>
   </footer>
 
-  <!-- Vanilla JS Tab Switcher -->
+  <!-- Vanilla JS Tab Switcher & Live Protocol Playground -->
   <script>
     function switchTab(evt, tabId) {
       const buttons = document.querySelectorAll('.tab-btn');
@@ -1401,6 +1571,116 @@
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function setActiveSimulatorBtn(btn) {
+      const allBtns = document.querySelectorAll('.sim-btn');
+      allBtns.forEach(b => {
+        b.classList.remove('btn-try-out');
+        b.classList.add('btn-github');
+      });
+      if (btn && btn.classList) {
+        btn.classList.remove('btn-github');
+        btn.classList.add('btn-try-out');
+      }
+    }
+
+    async function runLiveUAPDiscovery(btn) {
+      setActiveSimulatorBtn(btn);
+      const box = document.getElementById('protocol-live-output');
+      const content = document.getElementById('protocol-output-content');
+      box.style.display = 'block';
+      content.innerText = 'Fetching /.well-known/agent.json...';
+      try {
+        const res = await fetch('/.well-known/agent.json');
+        const data = await res.json();
+        content.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        content.innerText = 'Error: ' + err.message;
+      }
+    }
+
+    async function runLiveAP2Discovery(btn) {
+      setActiveSimulatorBtn(btn);
+      const box = document.getElementById('protocol-live-output');
+      const content = document.getElementById('protocol-output-content');
+      box.style.display = 'block';
+      content.innerText = 'Fetching /.well-known/ap2.json...';
+      try {
+        const res = await fetch('/.well-known/ap2.json');
+        const data = await res.json();
+        content.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        content.innerText = 'Error: ' + err.message;
+      }
+    }
+
+    async function runLiveUAPMessageTest(btn) {
+      setActiveSimulatorBtn(btn);
+      const box = document.getElementById('protocol-live-output');
+      const content = document.getElementById('protocol-output-content');
+      box.style.display = 'block';
+      content.innerText = 'Sending signed UAP Envelope (RECOMMEND_CROSS_SELL) to /api/uap/message...';
+      try {
+        const nowIso = new Date().toISOString();
+        const payload = { merchant: 'shopnest', product_id: 'SHOE_001', quantity: 1 };
+        // Post message envelope
+        const envelope = {
+          protocol_version: 'UAP/1.0',
+          message_id: 'uap_test_' + Math.random().toString(36).substring(2, 9),
+          sender_id: 'agent1_buyer',
+          recipient_id: 'agent2_shopnest',
+          intent: 'RECOMMEND_CROSS_SELL',
+          timestamp: nowIso,
+          payload: payload,
+          signature: 'uap_simulated_client_sig'
+        };
+        const res = await fetch('/api/uap/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(envelope)
+        });
+        const data = await res.json();
+        content.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        content.innerText = 'Error: ' + err.message;
+      }
+    }
+
+    async function runLiveAP2MandateTest(btn) {
+      setActiveSimulatorBtn(btn);
+      const box = document.getElementById('protocol-live-output');
+      const content = document.getElementById('protocol-output-content');
+      box.style.display = 'block';
+      content.innerText = 'Creating and cryptographically signing live AP2 Delegation Mandate...';
+      try {
+        const testPayload = {
+          session_id: 'sim_session_' + Math.random().toString(36).substring(2, 8),
+          max_amount: 3000,
+          authorized_merchants: ['shopnest', 'cartwave'],
+          validity_minutes: 60,
+          purpose: 'Live AP2 Delegation Mandate Simulation',
+          cart_items: [
+            { p_id: 'SHOE_001', p_name: 'Nike Air Zoom Pegasus', merchant: 'shopnest', price: 2400, quantity: 1 },
+            { p_id: 'INSOLE_001', p_name: 'Orthotic Cushioned Insoles', merchant: 'shopnest', price: 450, quantity: 1 }
+          ]
+        };
+
+        const res = await fetch('/api/ap2/mandates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testPayload)
+        });
+
+        if (!res.ok) {
+          throw new Error('Server returned ' + res.status + ': ' + (await res.text()));
+        }
+
+        const data = await res.json();
+        content.innerText = '✅ Live AP2 Delegation Mandate Created & Cryptographically Signed:\n' + JSON.stringify(data, null, 2);
+      } catch (err) {
+        content.innerText = 'Error creating AP2 Mandate: ' + err.message;
+      }
     }
   </script>
 

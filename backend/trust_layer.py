@@ -312,3 +312,80 @@ class TrustLayer:
             "approved": True,
             "reason": "CART_VALIDATION_SUCCESS"
         }
+
+    @staticmethod
+    def validate_ap2_mandate(
+        mandate_id: str,
+        cart_items: List[Dict[str, Any]],
+        expected_total: int,
+        merchant: str
+    ) -> Dict[str, Any]:
+        """
+        Guardrail #8: Cryptographically bounds agent payments via AP2 Delegation Mandate.
+        Validates HMAC signature, expiration time, merchant authorization, and ensures
+        the cart total does not exceed the user-authorized maximum spending ceiling.
+        """
+        from backend.ap2_service import ap2_service
+
+        if not mandate_id:
+            return {
+                "approved": False,
+                "guardrail": "GUARDRAIL_8_AP2_MANDATE",
+                "action": "REJECT",
+                "reason": "MISSING_AP2_MANDATE_ID"
+            }
+
+        valid, reason = ap2_service.verify_mandate_for_claim(
+            mandate_id=mandate_id,
+            cart_items=cart_items,
+            claim_amount=expected_total,
+            merchant=merchant
+        )
+
+        if not valid:
+            return {
+                "approved": False,
+                "guardrail": "GUARDRAIL_8_AP2_MANDATE",
+                "action": "REJECT",
+                "mandate_id": mandate_id,
+                "reason": reason
+            }
+
+        mandate = ap2_service.get_mandate(mandate_id)
+        return {
+            "approved": True,
+            "guardrail": "GUARDRAIL_8_AP2_MANDATE",
+            "action": "ALLOW_SETTLEMENT",
+            "mandate_id": mandate_id,
+            "max_authorized_amount": mandate.max_amount if mandate else expected_total,
+            "claimed_amount": expected_total,
+            "cart_hash": mandate.cart_hash if mandate else None,
+            "reason": "AP2_MANDATE_CRYPTOGRAPHICALLY_VERIFIED"
+        }
+
+    @staticmethod
+    def validate_uap_envelope(envelope_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validates inter-agent communication envelope per Universal Agent Protocol standards.
+        """
+        from backend.uap_service import uap_service
+        from backend.schemas import UAPMessageEnvelope
+
+        try:
+            envelope = UAPMessageEnvelope(**envelope_data)
+            is_valid = uap_service.verify_envelope(envelope)
+            return {
+                "approved": is_valid,
+                "protocol_version": envelope.protocol_version,
+                "message_id": envelope.message_id,
+                "intent": envelope.intent,
+                "sender_id": envelope.sender_id,
+                "recipient_id": envelope.recipient_id,
+                "reason": "UAP_ENVELOPE_VERIFIED" if is_valid else "INVALID_UAP_SIGNATURE"
+            }
+        except Exception as e:
+            return {
+                "approved": False,
+                "reason": f"MALFORMED_UAP_ENVELOPE: {str(e)}"
+            }
+
