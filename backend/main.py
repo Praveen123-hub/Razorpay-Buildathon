@@ -220,9 +220,18 @@ def get_guide_page():
     return FileResponse(path)
 
 
-@app.get("/", response_class=HTMLResponse, tags=["Storefronts"])
+@app.get("/", response_class=FileResponse, tags=["Storefronts"])
+def get_root_page():
+    """Serves the Login & Registration page by default when opening the root application URL."""
+    path = os.path.join(FRONTEND_DIR, "login.html")
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="login.html not found")
+    return FileResponse(path)
+
+
+@app.get("/hub", response_class=HTMLResponse, tags=["Storefronts"])
 def get_hub():
-    """Simple navigation hub to access the Login, Buyer Agent, Guide and merchant storefronts."""
+    """Navigation hub to access the Login, Buyer Agent, Guide and merchant storefronts."""
     return """
     <!DOCTYPE html>
     <html>

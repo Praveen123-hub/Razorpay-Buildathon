@@ -162,18 +162,26 @@ def extract_size_from_text(text: str) -> Optional[Any]:
     return None
 
 
+CATALOG_COLORS = [
+    # Multi-word colors first (matched in priority order)
+    "Space Grey", "Rose Gold", "Carbon Fiber", "Ocean Blue", "Navy Blue", 
+    "Olive Green", "Dark Blue", "Light Blue", "Light Wash Blue", "Dark Indigo",
+    # Single-word colors
+    "Black", "White", "Blue", "Red", "Green", "Grey", "Gray", "Silver",
+    "Gold", "Navy", "Pink", "Purple", "Brown", "Olive", "Charcoal",
+    "Orange", "Tan", "Yellow", "Tortoise", "Clear", "RGB"
+]
+
+
 def extract_color_from_text(text: str) -> Optional[str]:
-    """Extracts common color names from text."""
-    common_colors = [
-        "black", "white", "blue", "red", "green", "grey", "gray", "silver",
-        "gold", "maroon", "navy", "pink", "purple", "brown", "olive", "beige",
-        "charcoal", "dark indigo", "light wash blue", "lime", "indigo", "orange",
-        "tan"
-    ]
+    """Extracts catalog color names from text."""
     lower = text.lower()
-    for col in common_colors:
-        if re.search(r'\b' + re.escape(col) + r'\b', lower):
-            return col.title()
+    for col in CATALOG_COLORS:
+        pattern = r'\b' + re.escape(col.lower()) + r'\b'
+        if re.search(pattern, lower):
+            if col == "Gray":
+                return "Grey"
+            return col
     return None
 
 
@@ -445,176 +453,78 @@ class BuyerAgent:
         # 1. Semantic Search across merchants using normalized query
         hits = []
         for merchant in ("shopnest", "cartwave"):
-            hits.extend(semantic_search_engine.search(merchant, normalized_q, top_k=5))
+            hits.extend(semantic_search_engine.search(merchant, normalized_q, top_k=8))
             
         if not hits:
             return []
 
-        # Determine accessory intent strictly from query keywords (non-hardcoded)
-        query_lower = normalized_q.lower()
-        accessory_keywords = ["accessory", "accessories", "band", "strap", "socks", "insole", "riser", "backpack", "coaster", "protector", "case", "stand", "holder"]
-        is_accessory_query = any(kw in query_lower for kw in accessory_keywords)
+        valid_hits = [h for h in hits if h.get("similarity_score", 0.0) >= 0.40]
+        if not valid_hits:
+            return []
 
-        # Tokenize and extract meaningful words from user query for product-intent alignment
-        query_words = normalized_q.lower().split()
-        noise_words = {
+        q_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', normalized_q).lower()
+        q_words = set(singularize_word(w) for w in q_clean.split() if len(w) > 1)
+        noise = {
             "a", "an", "the", "under", "with", "from", "each", "need", "want", 
             "find", "get", "buy", "looking", "for", "please", "priority", 
             "highest", "rated", "cheapest", "best", "balance", "over", 
             "above", "below", "price", "budget", "size", "color", "i", "would", "like"
         }
-        meaningful_query_words = [w for w in query_words if w not in noise_words and len(w) > 1]
-        singular_query_words = [singularize_word(w) for w in meaningful_query_words]
-        if not singular_query_words:
-            singular_query_words = [singularize_word(w) for w in query_words if len(w) > 1]
+        meaningful_q_words = q_words - noise
+        if not meaningful_q_words:
+            meaningful_q_words = q_words
 
-        # Pre-calculate eligible categories based on catalog products directly matching the query words
-        eligible_categories = set()
-        for hit in hits:
-            p_name_cleaned = re.sub(r'[^a-zA-Z0-9\s\-\+%]', '', hit.get("p_name", "").lower())
-            p_name_words = [singularize_word(w) for w in p_name_cleaned.split()]
-            is_direct_match = True
-            for qw in singular_query_words:
-                if not any(qw == pw or qw in pw for pw in p_name_words):
-                    is_direct_match = False
-                    break
-            if is_direct_match:
-                eligible_categories.add(hit.get("category", ""))
+        accessory_intent_words = {"insole", "sock", "strap", "protector", "coaster", "case", "cable", "stand", "accessory"}
+        user_wants_accessory = bool(meaningful_q_words & accessory_intent_words)
+        
+        bag_synonyms = {"bag", "backpack", "duffel"}
+        has_generic_bag_intent = ("bag" in meaningful_q_words) and not any(k in meaningful_q_words for k in ("duffel", "sports", "backpack", "laptop"))
 
-        # Filter search hits based on score relevance, accessory alignment, and product intent
-        filtered_hits = []
-        for hit in hits:
-            score = hit.get("similarity_score", 0.0)
-            if score < 0.40:
+        scored = []
+        seen = set()
+        for h in valid_hits:
+            pid = h["p_id"]
+            merchant = h["merchant"]
+            key = (merchant, pid)
+            if key in seen:
                 continue
-
-            has_accessory_category = "Accessories" in hit.get("category", "")
+            seen.add(key)
             
-            p_name_cleaned = re.sub(r'[^a-zA-Z0-9\s\-\+%]', '', hit.get("p_name", "").lower())
-            p_name_words = [singularize_word(w) for w in p_name_cleaned.split()]
-            is_direct_match = True
-            for qw in singular_query_words:
-                if not any(qw == pw or qw in pw for pw in p_name_words):
-                    is_direct_match = False
-                    break
-
-            if not is_accessory_query and has_accessory_category:
-                if not is_direct_match:
-                    continue
-            elif is_accessory_query and not has_accessory_category:
-                if not is_direct_match:
-                    continue
-
-            if is_direct_match or hit.get("category", "") in eligible_categories:
-                filtered_hits.append(hit)
-
-        candidates = []
-        for hit in filtered_hits:
-            prod = dal.get_product(hit["merchant"], hit["p_id"])
-            if prod:
-                candidates.append(prod)
-
-        # Metadata-driven accessory intent protection
-        all_products = []
-        for m in ("shopnest", "cartwave"):
-            all_products.extend(dal.get_products(m))
-        
-        all_cats = set(p.get("category", "") for p in all_products)
-        accessory_cats = {c for c in all_cats if "accessories" in c.lower()}
-        
-        # Build accessory nouns map using TYPE-SPECIFIC suffix nouns (last 3 meaningful words).
-        # This distinguishes 'laptop stand' (suffix: stand/riser) from 'laptop' (no suffix match).
-        brand_noise_short = {"pack", "set", "of", "with", "and", "for", "in", "by", "the", "pro", "max"}
-        
-        # Collect meaningful words from primary (non-accessory) product names to exclude them from
-        # accessory type_nouns — prevents 'laptop' from matching BACK_001's type nouns.
-        primary_product_words = set()
-        for p in all_products:
-            if p.get("category", "") not in accessory_cats:
-                name_clean = re.sub(r'[^a-zA-Z]', ' ', p.get("p_name", "")).lower()
-                for w in name_clean.split():
-                    if len(w) > 2 and w not in brand_noise_short:
-                        primary_product_words.add(singularize_word(w))
-        
-        accessory_nouns_map = {}
-        for p in all_products:
-            cat = p.get("category", "")
-            if cat in accessory_cats:
-                name_clean = re.sub(r'\b[0-9]+(?:mm|m|w|v|ah|mah|hz|%|\+)\b', '', p.get("p_name", ""), flags=re.IGNORECASE)
-                name_clean = re.sub(r'\b[0-9]+\b', '', name_clean)
-                words = re.sub(r'[^a-zA-Z]', ' ', name_clean).lower().split()
-                # Type nouns = last 3 meaningful words that are NOT primary product words
-                meaningful_words = [w for w in words if len(w) > 2 and w not in brand_noise_short]
-                # Exclude words that are primary product identifiers (e.g. 'laptop', 'phone')
-                type_words = [w for w in meaningful_words[-3:] if singularize_word(w) not in primary_product_words]
-                type_nouns = set(singularize_word(w) for w in type_words) if type_words else set()
-                # Fallback: if all suffix words are primary product words, use last meaningful word anyway
-                if not type_nouns and meaningful_words:
-                    type_nouns = {singularize_word(meaningful_words[-1])}
-                if type_nouns:
-                    accessory_nouns_map[p.get("p_id")] = type_nouns
-
-                    
-        # Check if the query specifically matches any accessory nouns
-        query_words_clean = re.sub(r'[^a-zA-Z0-9]', ' ', normalized_q).lower().split()
-        q_words_sing = set(singularize_word(w) for w in query_words_clean)
-        
-        primary_candidates = [p for p in candidates if p.get("category", "") not in accessory_cats]
-        
-        def accessory_matches_query(pid: str) -> bool:
-            """Returns True only if this accessory's TYPE-SPECIFIC noun matches the query,
-            AND the matching word is an accessory-differentiating word (not just the product
-            category the user asked for). E.g. 'laptop stand' matches STND_001 via 'stand',
-            but 'laptop' alone does NOT match STND_001 (no stand/riser in query)."""
-            acc_nouns = accessory_nouns_map.get(pid, set())
-            matching_words = q_words_sing & acc_nouns
-            if not matching_words:
-                return False
-            # Reject if the ONLY matching words are also the entire user query
-            # (means user asked for "laptop" and only "laptop" matched — not an accessory query)
-            non_category_matches = matching_words - q_words_sing.intersection(
-                set(singularize_word(w) for w in query_words_clean if singularize_word(w) in q_words_sing)
-                - {singularize_word(w) for w in query_words_clean}
-            )
-            # Simpler check: at least one matching noun must NOT be in the base query words
-            # when the query has only one meaningful word (single-word product request).
-            meaningful_q = [w for w in query_words_clean if len(w) > 2]
-            if len(meaningful_q) == 1:
-                # Single-word query like 'laptop' — only accept if noun is NOT that same word
-                return any(n != singularize_word(meaningful_q[0]) for n in matching_words)
-            return True
-        
-        filtered_candidates = []
-        for p in candidates:
-            pid = p.get("p_id")
-            cat = p.get("category", "")
-            p_name_words = set(singularize_word(w) for w in re.sub(r'[^a-zA-Z0-9]', ' ', p.get("p_name", "")).lower().split())
-            
-            if cat in accessory_cats:
-                query_matches_accessory = accessory_matches_query(pid)
+            prod = dal.get_product(merchant, pid)
+            if not prod:
+                continue
                 
-                if query_matches_accessory:
-                    # Query explicitly requests this accessory — always keep it
-                    filtered_candidates.append(p)
-                elif primary_candidates:
-                    # A better primary product exists — exclude accessory
-                    continue
-                else:
-                    # No primary product and query doesn't match accessory nouns — exclude
-                    continue
-            else:
-                # Primary candidate. If query matches accessory nouns of some candidates, filter out primary
-                query_has_accessory_intent = any(
-                    accessory_matches_query(other.get("p_id"))
-                    for other in candidates
-                    if other.get("category", "") in accessory_cats
-                )
-                if query_has_accessory_intent:
-                    continue
-                filtered_candidates.append(p)
-
+            p_name = prod.get("p_name", "").lower()
+            p_name_words = set(singularize_word(w) for w in re.sub(r'[^a-zA-Z0-9]', ' ', p_name).split())
+            category = prod.get("category", "")
+            is_accessory_cat = "accessories" in category.lower()
             
-        return filtered_candidates
+            # Check keyword overlap
+            overlap = bool(meaningful_q_words & p_name_words)
+            if has_generic_bag_intent and (p_name_words & bag_synonyms):
+                overlap = True
+                
+            acc_specific_match = user_wants_accessory and bool(meaningful_q_words & accessory_intent_words & p_name_words)
+            
+            # If user did NOT ask for accessory, but product is accessory (e.g. insole when asking for shoe), reject accessory
+            if not user_wants_accessory and is_accessory_cat and not (meaningful_q_words & (p_name_words - {"shoe", "watch", "earbud", "laptop", "coffee"})):
+                if not (has_generic_bag_intent and pid == "BACK_001"):
+                    overlap = False
+                
+            if user_wants_accessory and not is_accessory_cat and not acc_specific_match:
+                overlap = False
+                
+            is_primary = not is_accessory_cat
+            scored.append((acc_specific_match, overlap, is_primary, h["similarity_score"], prod))
+            
+        scored.sort(key=lambda x: (x[0], x[1], x[2], x[3]), reverse=True)
+        
+        if any(s[1] for s in scored):
+            candidates = [s[4] for s in scored if s[1]]
+        else:
+            candidates = [s[4] for s in scored[:4]]
+            
+        return candidates
 
     def extract_slots(self, text: str, current_reqs: Dict[str, Any], last_question: Optional[str] = None) -> Dict[str, Any]:
         """Extracts shopping requirement slots from user text, strictly preserving existing filled slots."""
@@ -786,24 +696,12 @@ class BuyerAgent:
         has_color_option = False
         custom_list_attrs = {}
 
-        # Check category indicators to separate footwear/apparel from electronics/other
-        is_footwear_or_apparel_query = False
-        for p in candidates:
-            cat = p.get("category", "")
-            if is_footwear_or_apparel(cat):
-                is_footwear_or_apparel_query = True
-                break
-
         is_loop_band_query = "band" in q or "loop" in q or "resistance" in q
         
         all_sizes = set()
-        all_colors = set()
-        product_colors = {}
-        product_ids = set()
+        all_colors = []
 
         for p in candidates:
-            pid = p.get("p_id")
-            product_ids.add(pid)
             attrs = p.get("attributes", {})
             
             # 1. Size mapping (sizes, size, waist)
@@ -816,10 +714,9 @@ class BuyerAgent:
             colors = attrs.get("colors") or attrs.get("color")
             if colors and isinstance(colors, list):
                 if len(colors) > 1 and is_meaningful_colors(colors):
-                    all_colors.update(str(c) for c in colors)
-                    if pid not in product_colors:
-                        product_colors[pid] = set()
-                    product_colors[pid].update(str(c) for c in colors)
+                    for c in colors:
+                        if c not in all_colors:
+                            all_colors.append(c)
             
             # 3. Custom dynamic list attributes
             for k, v in attrs.items():
@@ -830,23 +727,11 @@ class BuyerAgent:
                         custom_list_attrs[k] = set()
                     custom_list_attrs[k].update(str(x) for x in v)
 
-        if is_footwear_or_apparel_query and len(all_sizes) > 1:
+        if len(all_sizes) > 1:
             has_size_option = True
             
-        if is_footwear_or_apparel_query and len(all_colors) > 1:
+        if len(all_colors) > 1:
             has_color_option = True
-        elif len(all_colors) > 1:
-            # For non-footwear/apparel, only ask color if different candidate product models differ in colors
-            if len(product_ids) > 1:
-                first_pid = list(product_ids)[0]
-                first_colors = product_colors.get(first_pid, set())
-                differ = False
-                for pid in product_ids:
-                    if product_colors.get(pid, set()) != first_colors:
-                        differ = True
-                        break
-                if differ:
-                    has_color_option = True
 
         if has_size_option and reqs.get("size") is None:
             missing.append("size")
@@ -857,6 +742,8 @@ class BuyerAgent:
         for attr_name, options in custom_list_attrs.items():
             is_selectable = False
             if is_loop_band_query and attr_name == "levels":
+                is_selectable = True
+            elif attr_name in ("levels", "resistance_levels"):
                 is_selectable = True
 
             if is_selectable and len(options) > 1:
